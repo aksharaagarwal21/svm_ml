@@ -388,6 +388,7 @@
     .two, .four { grid-template-columns: 1fr 1fr; }
   }
 </style>
+<link rel="stylesheet" href="live-demo/demo.css">
 </head>
 <body>
 
@@ -704,96 +705,8 @@
       <div class="oneidea" id="oneIdea"><b>Key takeaway</b>SVM doesn't simply try to separate training examples. It tries to learn a boundary that balances separation, margin size, and allowed errors, so it can make useful predictions on unseen data.</div>
     </div>
 
-    <!-- Bonus -->
-    <div class="slide" data-slide="bonus">
-      <div class="bgrid" id="bGrid">
-        <button class="bcard" data-b="python"><span class="em">🐍</span><b>Python code</b><small>The Iris flower example, command by command</small></button>
-        <button class="bcard" data-b="metrics"><span class="em">📏</span><b>Evaluation metrics</b><small>How do we know our SVM is good?</small></button>
-        <button class="bcard" data-b="compare"><span class="em">⚖️</span><b>SVM vs other algorithms</b><small>How each one learns</small></button>
-      </div>
-
-      <div class="bview" id="bv-python" hidden>
-        <div class="bhead"><button class="btn ghost bback">← All cards</button><h2>🐍 Python: SVM on the Iris flowers</h2></div>
-        <div class="pygrid">
-<pre class="code"><span class="c"># Identify the flower species from 4 measurements</span>
-from sklearn.datasets import load_iris
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVC
-from sklearn.pipeline import make_pipeline
-from sklearn.metrics import accuracy_score, classification_report
-
-<span class="c"># 1. Load the flower dataset</span>
-iris = load_iris()
-X = iris.data
-y = iris.target
-
-<span class="c"># 2. Split into training and testing data</span>
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42, stratify=y)
-
-<span class="c"># 3. Scale features and train an SVM</span>
-model = make_pipeline(
-    StandardScaler(),
-    SVC(kernel="rbf", C=1.0, gamma="scale"))
-model.fit(X_train, y_train)
-
-<span class="c"># 4. Predict on unseen test examples</span>
-y_pred = model.predict(X_test)
-
-<span class="c"># 5. Evaluate performance</span>
-print("Accuracy:", accuracy_score(y_test, y_pred))
-print(classification_report(y_test, y_pred))
-
-<span class="c"># 6. Predict one new flower</span>
-new_flower = [[5.1, 3.5, 1.4, 0.2]]
-prediction = model.predict(new_flower)</pre>
-          <div>
-            <table class="btable">
-              <tr><th>Code</th><th>What it means</th></tr>
-              <tr><td><code>load_iris()</code></td><td>Give me the flower examples</td></tr>
-              <tr><td><code>train_test_split()</code></td><td>Separate practice questions from exam questions</td></tr>
-              <tr><td><code>StandardScaler()</code></td><td>Make feature scales comparable</td></tr>
-              <tr><td><code>SVC()</code></td><td>Create an SVM classifier</td></tr>
-              <tr><td><code>kernel="rbf"</code></td><td>Allow a curved boundary</td></tr>
-              <tr><td><code>C=1.0</code></td><td>Set the penalty strength</td></tr>
-              <tr><td><code>gamma="scale"</code></td><td>Pick gamma automatically from the data</td></tr>
-              <tr><td><code>fit()</code></td><td>Train the model</td></tr>
-              <tr><td><code>predict()</code></td><td>Predict an answer</td></tr>
-              <tr><td><code>accuracy_score()</code></td><td>Fraction of correct predictions</td></tr>
-            </table>
-            <p class="bnote">The pipeline learns scaling only from the training set. That prevents data leakage, where test data sneaks into training.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="bview" id="bv-metrics" hidden>
-        <div class="bhead"><button class="btn ghost bback">← All cards</button><h2>📏 How do we know our SVM is good?</h2></div>
-        <div class="acc">Spam test: 90 correct out of 100 emails → Accuracy = 90 / 100 × 100 = <b>90%</b></div>
-        <table class="btable">
-          <tr><th>Metric</th><th>Simple meaning</th></tr>
-          <tr><td><b>Accuracy</b></td><td>How often was the model correct overall?</td></tr>
-          <tr><td><b>Precision</b></td><td>Of emails called spam, how many really were spam?</td></tr>
-          <tr><td><b>Recall</b></td><td>Of all actual spam emails, how many did we catch?</td></tr>
-          <tr><td><b>F1-score</b></td><td>One balanced score combining precision and recall</td></tr>
-          <tr><td><b>Confusion matrix</b></td><td>A table of correct and incorrect classifications</td></tr>
-        </table>
-        <p class="bnote">When one class is rare, like fraud, precision and recall tell you more than accuracy alone. For SVR (predicting numbers), use MAE, RMSE and R².</p>
-      </div>
-
-      <div class="bview" id="bv-compare" hidden>
-        <div class="bhead"><button class="btn ghost bback">← All cards</button><h2>⚖️ SVM vs other algorithms</h2></div>
-        <table class="btable">
-          <tr><th>Algorithm</th><th>How it learns</th></tr>
-          <tr><td><b>Logistic Regression</b></td><td>Learns a straight-line score and turns it into class probabilities</td></tr>
-          <tr><td><b>Decision Tree</b></td><td>Learns a series of yes/no questions</td></tr>
-          <tr><td><b>KNN</b></td><td>Looks at the closest known examples</td></tr>
-          <tr><td><b>SVM</b></td><td>Learns the boundary with the widest margin</td></tr>
-          <tr><td><b>Neural Network</b></td><td>Learns many layers of transformations</td></tr>
-        </table>
-        <p class="bnote">No algorithm is automatically best for every dataset. Linear SVM often works very well for text; tree ensembles can be handier for some tables of data.</p>
-      </div>
-    </div>
+    <!-- Live Demo screens use the existing slide layout. -->
+    <div id="ld-stage-mount"></div>
   </section>
 
   <aside class="panel">
@@ -1006,11 +919,7 @@ prediction = model.predict(new_flower)</pre>
       <p class="note">Bonus cards come next, if there's time.</p>
     </div>
 
-    <!-- Bonus -->
-    <div class="lvl itext" data-step="bonus">
-      <p>Want to know more? Open a card if there's time.</p>
-      <p class="note">Each card has a ← button to come back.</p>
-    </div>
+    <div id="ld-panel-mount"></div>
 
     <div class="key" id="keybox"><b>Key idea</b><p id="key"></p></div>
   </aside>
@@ -1031,6 +940,8 @@ prediction = model.predict(new_flower)</pre>
   </div>
 </div>
 
+<script src="live-demo/data.js"></script>
+<script src="live-demo/demo.js"></script>
 <script>
 (() => {
 'use strict';
@@ -2480,7 +2391,7 @@ const CHAPTERS = [
   { label: 'Chapter 3', name: 'Kernels and Applications', color: '#7048e8', who: NAMES[2],
     teaser: 'Curved boundaries, tuning, and SVM in the real world.' },
   { label: 'Ending', name: 'Review and Summary', color: '#2f9e44', who: 'All presenters' },
-  { label: 'Bonus', name: 'Further Reading', color: '#5a6577', who: 'If time allows' },
+  { label: 'Live Demo', name: 'Try It with Real Python', color: '#0b827c', who: 'All presenters' },
 ];
 
 // Every screen: its chapter, what fills the stage (an HTML slide, a canvas drawing, or a level),
@@ -2589,10 +2500,7 @@ const STEPS = [
     'Then reveal the one idea that connects everything (Next or Space): balance separation, margin size and allowed errors to predict unseen data well.',
     'Thank the class, and open the bonus cards if there is time.'] },
 
-  { id: 'bonus', ch: 4, slide: 'bonus', title: 'Further Reading', notes: [
-    'Only if time allows. Click a card to open it, and ← to come back.',
-    'Python: the Iris example uses a pipeline with StandardScaler and SVC(kernel="rbf"). The pipeline learns scaling only from the training set, which prevents data leakage.',
-    'Metrics: accuracy is not enough when one class is rare (like fraud); use precision, recall and F1. For SVR, use MAE, RMSE and R².'] },
+  ...window.LiveDemo.steps,
 ];
 
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -2631,7 +2539,7 @@ function goStep(i) {
   if (cur.slide === 'real') setTab(RW.tab);
   if (cur.slide === 'final') mysteryUpdate();
   if (cur.slide === 'closing') renderClosing();
-  if (cur.slide === 'bonus') showBonus(null);
+  window.LiveDemo.enter(cur.id);
   $('gs').value = GM.slider;
   $('c3').value = S[3].slider;
   syncSliders();
@@ -2654,6 +2562,7 @@ function startOver() {
   DD.k = 0;
   RW.tab = 'types';
   CL.idea = false;
+  window.LiveDemo.reset();
   goStep(0);
 }
 
