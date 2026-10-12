@@ -228,6 +228,33 @@
   .dcard b { font-size: 1.5rem; color: var(--ch); }
   .dcard span { font-size: 1.05rem; font-weight: 700; color: #2c3546; }
 
+  /* playground test, walkway (Level 3) */
+  .walk { display: grid; gap: .4rem; }
+  .walk button {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: .1rem .45rem; text-align: left;
+    border: 2px solid var(--line); background: #fff; border-radius: .7rem; padding: .35rem .7rem;
+    font-size: .9rem; line-height: 1.3; color: #2c3546;
+  }
+  .walk button b { font-size: .98rem; color: var(--ink); }
+  .walk button:hover { background: #f6f4ef; }
+  .walk button.on { border-color: var(--ch); background: #fff5ec; }
+  .readouts.with-reset { grid-template-columns: auto 1fr auto; }
+  .btn.icon { padding: .45rem .75rem; align-self: end; }
+
+  /* optional deep dive: the SVM formula */
+  .ddtag { align-self: center; background: #fff1e4; color: #b04500; font-size: .85rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; padding: .3rem .9rem; border-radius: 99px; }
+  .formula { text-align: center; font-family: "Cambria Math", Cambria, "Times New Roman", serif; font-size: 2.3rem; line-height: 1.5; }
+  .formula .st { font-size: 1.45rem; color: #2c3546; }
+  .fp { border-radius: .4rem; padding: 0 .2rem; transition: background .3s, color .3s; }
+  .fp.on { background: #ffe1c2; color: #b04500; }
+  .dd { width: min(40rem, 100%); margin: 0 auto; padding: 0; list-style: none; display: grid; gap: .55rem; }
+  .dd li {
+    display: flex; align-items: baseline; gap: .9rem; background: #f6f4ef; border-radius: .7rem; padding: .5rem .9rem;
+    font-size: 1.15rem; line-height: 1.4; opacity: 0; transform: translateY(6px); transition: opacity .4s, transform .4s;
+  }
+  .dd li.on { opacity: 1; transform: none; }
+  .dd li b { min-width: 5rem; font-family: "Cambria Math", Cambria, serif; font-size: 1.25rem; color: #b04500; }
+
   /* ---------- quiz ---------- */
   .quizslide .btn { align-self: flex-start; font-size: 1.05rem; }
   .opts { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
@@ -433,6 +460,21 @@
       <p class="cap">We can't draw 4D, but the maths works exactly the same way.</p>
     </div>
 
+    <!-- Chapter 2 -->
+    <div class="slide vcenter" data-slide="deep">
+      <div class="ddtag">⭐ Optional deep dive</div>
+      <div class="formula">
+        min <span class="fp" data-p="0">½‖w‖²</span> + <span class="fp" data-p="1">C</span> <span class="fp" data-p="2">Σ ξᵢ</span>
+        <div class="st">subject to &nbsp;yᵢ(wᵀxᵢ + b) ≥ 1 − <span class="fp" data-p="3">ξᵢ</span>, &nbsp;ξᵢ ≥ 0</div>
+      </div>
+      <ol class="dd">
+        <li data-b="0"><b>½‖w‖²</b><span>The first part rewards a wide margin.</span></li>
+        <li data-b="1"><b>C · Σξᵢ</b><span>The second part penalises breaking the rules.</span></li>
+        <li data-b="2"><b>C</b><span>controls how much rule-breaking matters.</span></li>
+        <li data-b="3"><b>ξᵢ</b><span>measures how much each point breaks its margin rule.</span></li>
+      </ol>
+    </div>
+
     <!-- Ending -->
     <div class="slide quizslide" data-slide="quiz">
       <div class="tag" id="qNum"></div>
@@ -504,6 +546,7 @@
       <p class="status" id="s1"></p>
       <div class="row">
         <button class="btn primary" id="others">Show other roads</button>
+        <button class="btn ghost" id="play1">🛝 Playground test</button>
         <button class="btn ghost" data-reset="1">↺ Reset</button>
       </div>
     </div>
@@ -531,7 +574,7 @@
         </div>
         <div>
           <svg viewBox="0 0 38 22" aria-hidden="true"><circle cx="19" cy="11" r="10" fill="rgba(255,196,0,.4)"/><circle cx="19" cy="11" r="7.5" fill="none" stroke="#f5b400" stroke-width="2.5"/><circle cx="19" cy="11" r="5" fill="#1c62d6" stroke="#fff" stroke-width="1.5"/></svg>
-          <span id="legendSV">Glowing houses = <b>support vectors</b></span>
+          <span>Glowing students = <b>support vectors</b></span>
         </div>
       </div>
     </div>
@@ -557,21 +600,31 @@
       <p>The points touching the dashed lines are the <b class="hl">Support Vectors</b>.</p>
       <p>Smaller ‖w‖ means a wider road.</p>
       <p>SVM's goal: make the road as wide as possible while keeping every point on the correct side.</p>
+      <p class="note">A bigger margin helps, but it doesn't guarantee correct predictions.</p>
+    </div>
+
+    <div class="lvl itext" data-step="deep">
+      <p>The whole SVM idea in one line: a <b>wide road</b> plus a <b>penalty for rule-breakers</b>.</p>
+      <p class="note">Real SVM solves this mathematically. Our animations only show the idea.</p>
+      <div class="row"><button class="btn primary" id="ddBtn">Reveal next</button></div>
     </div>
 
     <div class="lvl" data-step="l3">
+      <div class="walk">
+        <button data-c="0" id="soft3"><b>🙂 Soft margin</b>“A small slip is okay.”</button>
+        <button data-c="100" id="hard3"><b>🚫 Hard margin</b>“Nobody in the walkway!”</button>
+      </div>
       <div class="slider">
         <label for="c3"><span style="color:var(--ink);font-size:1.05rem">C (strictness)</span><span id="cval"></span></label>
         <input type="range" id="c3" min="0" max="100" value="0">
-        <div class="ends"><span>Relaxed</span><span>Strict</span></div>
+        <div class="ends"><span>Forgiving</span><span>Strict</span></div>
       </div>
-      <div class="readouts">
+      <div class="readouts with-reset">
         <div><span class="lbl">Road width</span><span class="big" id="w3">0 m</span></div>
-        <div><span class="lbl">Troublemaker</span><span class="mid" id="tm3"></span></div>
+        <div><span class="lbl">Arjun</span><span class="mid" id="tm3"></span></div>
+        <button class="btn ghost icon" data-reset="3" aria-label="Reset" title="Reset">↺</button>
       </div>
-      <div class="row">
-        <button class="btn ghost" data-reset="3">↺ Reset</button>
-      </div>
+      <div class="handover" data-next="2">But what if no straight road works at all?<small class="hand"></small></div>
     </div>
 
     <!-- Chapter 3 · Max Faces the Impossible -->
@@ -635,15 +688,15 @@ const COL = {
 const OTHER_COLORS = ['#7048e8', '#0ca678', '#f76707', '#d6336c', '#1098ad'];
 
 const TEXT = {
-  1: { title: 'Any Road',
-       say: 'Drag the road so the red village is on one side and the blue village is on the other.',
-       key: 'Many different roads can split the two villages. So how do we choose the best one?' },
-  2: { title: 'The Widest Road',
-       say: 'A wider road is a safer road: it leaves the most space between the road and every house.',
-       key: 'SVM finds the widest possible road. Only the houses touching its edges, the support vectors, decide where it goes.' },
+  1: { title: 'Any Road Will Do?',
+       say: "Drag Max's road so the Fail students (red) are on one side and the Pass students (blue) on the other.",
+       key: 'Many roads split the two groups. So which one is the best?' },
+  2: { title: 'Finding the Best Road',
+       say: 'A wider road is safer: it leaves the most space between the road and every student.',
+       key: 'SVM finds the widest road. Only the students touching its edges, the support vectors, decide where it goes.' },
   3: { title: 'The Troublemaker',
-       say: 'One red house was built inside the blue village. How strict should the road be about it?',
-       key: 'C sets how strict SVM is. Low C lets a few houses break the rules to keep the road wide. High C fits every house but squeezes the road.' },
+       say: 'Arjun studied hard but still failed, so his red dot sits among the Pass students.',
+       key: 'Low C = forgiving. High C = strict.' },
   4: { title: 'The Impossible Level',
        say: 'The blue village surrounds the red one, so no straight road can split them, unless we lift the houses up.',
        key: 'Kernel trick: look at the houses in a new way (give them height) so a flat cut works. Back on the map, that cut becomes a curve.' },
@@ -862,7 +915,7 @@ const sliderToC = v => Math.pow(10, Math.log10(C_MIN) + v / 100 * (Math.log10(C_
    ========================================================= */
 function fresh(level) {
   if (level === 1) {
-    return { pts: copyPts(VILLAGES), h: [{ x: 430, y: 330 }, { x: 570, y: 330 }], others: null, best: null };
+    return { pts: copyPts(VILLAGES), h: [{ x: 430, y: 330 }, { x: 570, y: 330 }], others: null, best: null, play: null };
   }
   if (level === 2) {
     const s = { pts: copyPts(VILLAGES), h: [{ x: 430, y: 110 }, { x: 430, y: 530 }], mode: 'user', disp: null, revealed: false, tau: 0.22 };
@@ -1034,8 +1087,11 @@ function setText(el, t) { if (shown.get(el) !== t) { shown.set(el, t); el.textCo
 function setCls(el, cls) { if (el.className !== cls) el.className = cls; }
 
 /* =========================================================
-   Level 1: Any Road
+   Level 1: Any Road Will Do?
    ========================================================= */
+// The playground test: three parallel roads, only the middle one is equally far from both groups.
+const PLAY_LINES = [[-0.75, 'Too close to red', COL.red, '#fff'], [0, 'Maximum margin', COL.gold, COL.ink], [0.75, 'Too close to blue', COL.blue, '#fff']];
+
 function draw1(s, now) {
   const { n, c } = lineFromHandles(s.h[0], s.h[1]);
   const cl = classify(s.pts, n, c);
@@ -1052,6 +1108,13 @@ function draw1(s, now) {
   if (s.others) for (const r of s.others) inLineFrame(r.n, r.c, () => {
     ctx.strokeStyle = r.color; ctx.lineWidth = 5; ctx.setLineDash([18, 12]); hline(0); ctx.setLineDash([]);
   });
+  if (s.play) {
+    const { n: pn, c: pc, hw } = s.play;
+    inLineFrame(pn, pc, () => { ctx.fillStyle = 'rgba(255,212,59,0.18)'; ctx.fillRect(-2500, -hw, 5000, 2 * hw); });
+    for (const [f, , col] of PLAY_LINES) inLineFrame(pn, pc + f * hw, () => {
+      ctx.strokeStyle = col; ctx.lineWidth = f ? 5 : 7; ctx.setLineDash(f ? [16, 10] : []); hline(0); ctx.setLineDash([]);
+    });
+  }
   if (best) inLineFrame(best.n, best.c, () => {
     ctx.globalAlpha = bu;
     ctx.strokeStyle = 'rgba(23,32,46,0.35)'; ctx.lineWidth = 11; hline(0);
@@ -1060,6 +1123,12 @@ function draw1(s, now) {
   drawThinRoad(n, c);
   ctx.restore();
   for (const p of s.pts) drawHouse(p, { wrong: cl.wrong.has(p) });
+  if (s.play) for (const [f, text, bg, fg] of PLAY_LINES) {
+    const seg = clipLine(s.play.n, s.play.c + f * s.play.hw, 0, 0, W, H);
+    if (!seg) continue;
+    const [a, b] = seg[0].y < seg[1].y ? seg : [seg[1], seg[0]], u = f ? 0.9 : 0.07;
+    pill(text, lerp(a.x, b.x, u), lerp(a.y, b.y, u), { bg, fg, size: 18 });
+  }
   if (best) {
     const seg = clipLine(best.n, best.c, 0, 0, W, H);
     if (seg) {
@@ -1080,13 +1149,15 @@ function draw1(s, now) {
   drawHandles(s.h, hover);
 
   const k = cl.wrong.size;
-  setText($('s1'), k ? `✗ ${k} house${k > 1 ? 's are' : ' is'} on the wrong side` : '✓ The road splits the two villages!');
-  setCls($('s1'), 'status ' + (k ? 'bad' : 'good'));
+  setText($('s1'), s.play ? 'Best choice: the road is equally far from the nearest red and blue students.'
+    : k ? `✗ ${k} student${k > 1 ? 's are' : ' is'} on the wrong side` : '✓ The road splits the two groups!');
+  setCls($('s1'), 'status ' + (s.play || !k ? 'good' : 'bad'));
+  setText($('play1'), s.play ? 'Hide playground test' : '🛝 Playground test');
   setText($('others'), s.others ? 'Hide other roads' : 'Show other roads');
   setText($('ask1hint'), best ? 'Click to hide' : 'Click to reveal');
   $('ans1').classList.toggle('on', !!best);
   if (best) {
-    let ans = '★ The best line leaves the biggest gap to the closest houses on both sides.';
+    let ans = '★ The best line leaves the biggest gap to the closest students on both sides.';
     if (s.others) {
       const gap = s.others.map(r => Math.min(...s.pts.map(p => Math.abs(r.n.x * p.x + r.n.y * p.y - r.c))));
       ans += ` Of roads A–E, road ${s.others[gap.indexOf(Math.max(...gap))].label} comes closest.`;
@@ -1114,7 +1185,7 @@ function draw2(s, now, dt) {
     for (const p of s.pts) drawHouse(p, { wrong: cl.wrong.has(p) });
     drawHandles(s.h, hover);
     setText($('hint2'), ok ? 'Drag the white handles. Can you make the road wider?'
-                           : 'Some houses are on the wrong side, so there is no road. Move it!');
+                           : 'Some students are on the wrong side, so there is no road. Move it!');
   } else {
     const tgt = roadTarget(s.svm.n, s.svm.c, s.svm.hw);
     s.disp = approach(s.disp, tgt, 1 - Math.exp(-dt / s.tau));
@@ -1132,8 +1203,8 @@ function draw2(s, now, dt) {
       drawHouse(p, { glow: s.revealed && Math.abs(yf - 1) < 0.03, wrong: yf < 0 });
     }
     setText($('hint2'), !s.revealed ? 'SVM is building the widest road…'
-      : crossed ? 'Houses crossed over: no clean road exists!'
-      : 'Drag a far-away house: nothing changes. Now drag a glowing one!');
+      : crossed ? 'Students crossed over: no clean road exists!'
+      : 'Drag a far-away student: nothing changes. Now drag a glowing one!');
   }
   setText($('w2'), fmt(width));
   const scale = 2 * s.svm.hw * 1.1 || 1;
@@ -1161,16 +1232,18 @@ function draw3(s, now, dt) {
   const tm = s.pts.find(p => p.tm);
   for (const p of s.pts) if (!p.tm) drawHouse(p, { wrong: s.svm.f(p) * p.c < 0 });
   drawHouse(tm, { wrong: s.svm.f(tm) * tm.c < 0 });
-  pill('troublemaker', tm.x, tm.y - 38, { size: 17 });
+  pill('Arjun · troublemaker', tm.x, tm.y - 38, { size: 17 });
 
   setText($('w3'), fmt(2 * L.hw));
   const C = s.C;
   setText($('cval'), `C = ${C < 1 ? C.toFixed(2) : C < 10 ? C.toFixed(1) : C.toFixed(0)}`);
   const yf = s.svm.f(tm) * tm.c;
   const el = $('tm3');
-  if (yf >= 0.98) { setText(el, 'Fits ✓ The road squeezes past it'); setCls(el, 'mid good'); }
-  else if (yf >= 0) { setText(el, 'Sitting on the road ⚠'); setCls(el, 'mid warn'); }
-  else { setText(el, 'Ignored (it is on the wrong side)'); setCls(el, 'mid'); }
+  if (yf >= 0.98) { setText(el, 'Fits ✓ The road squeezes past him'); setCls(el, 'mid good'); }
+  else if (yf >= 0) { setText(el, 'Inside the road ⚠'); setCls(el, 'mid warn'); }
+  else { setText(el, 'Forgiven: allowed on the wrong side'); setCls(el, 'mid'); }
+  $('soft3').classList.toggle('on', s.slider <= 33);
+  $('hard3').classList.toggle('on', s.slider >= 67);
 }
 
 /* =========================================================
@@ -1719,6 +1792,19 @@ function updateTimer(now) {
 }
 
 /* =========================================================
+   Chapter 2 deep dive: reveal the formula's meaning one part at a time
+   ========================================================= */
+const DD = { k: 0 };
+const DD_PARTS = [[0], [1, 2], [1], [2, 3]];          // formula parts to highlight for each bullet
+function renderDeep() {
+  document.querySelectorAll('.dd li').forEach((el, i) => el.classList.toggle('on', i < DD.k));
+  const lit = DD.k ? DD_PARTS[DD.k - 1] : [];
+  document.querySelectorAll('.fp').forEach(el => el.classList.toggle('on', lit.includes(+el.dataset.p)));
+  $('ddBtn').hidden = DD.k >= 4;
+  $('ddBtn').textContent = `Reveal next (${DD.k + 1} of 4)`;
+}
+
+/* =========================================================
    Main loop
    ========================================================= */
 let last = performance.now();
@@ -1842,6 +1928,16 @@ $('ask1').addEventListener('click', () => {
   s.best = { n: m.n, c: m.c, hw: m.hw, t0: performance.now() };
 });
 
+$('play1').addEventListener('click', () => {
+  const s = S[1];
+  s.play = s.play ? null : (m => ({ n: m.n, c: m.c, hw: m.hw }))(svmTrain(s.pts, HARD_C));
+});
+$('ddBtn').addEventListener('click', () => { DD.k = Math.min(4, DD.k + 1); renderDeep(); });
+document.querySelectorAll('.walk button').forEach(b => b.addEventListener('click', () => {
+  $('c3').value = b.dataset.c;
+  $('c3').dispatchEvent(new Event('input'));
+}));
+
 $('others').addEventListener('click', () => {
   const s = S[1];
   s.others = s.others ? null : otherRoads(s.pts);
@@ -1931,22 +2027,33 @@ const STEPS = [
     "Exam answer: \"the decision boundary that separates classes in the feature space.\" Hand over: Max can draw many lines… but which one is the best?"] },
 
   { id: 'ch2', ch: 1, slide: 'title', notes: [
-    'Recap: Max can draw many lines between Pass and Fail students.',
+    'Recap: Max can draw many lines between Pass and Fail students… but which one is the best?',
     'Chapter 2: how SVM picks the best road, the maths behind it, and what to do with a troublemaker.'] },
   { id: 'l1', ch: 1, level: 1, notes: [
-    'Many roads split the two groups.',
-    'The best road leaves the biggest gap to the closest points on both sides.'] },
+    'Many roads split the two groups. Click "Show other roads" and let the class vote for A–E.',
+    'Playground test: a line too close to red or too close to blue is risky. The best choice is equally far from the nearest red and blue students.',
+    'The margin is the distance from the boundary to the closest points, measured straight across (perpendicular).'] },
   { id: 'l2', ch: 1, level: 2, notes: [
-    'SVM wants the largest possible margin.',
-    'Only the glowing points, the support vectors, decide where the road goes.'] },
+    'SVM wants the largest possible margin: like a wide road, it leaves more space on both sides.',
+    'Support vectors are the points nearest the boundary; they decide where it goes. Drag a far point (nothing changes), then a glowing one (the road moves).',
+    "A bigger margin can help on new data, but it doesn't guarantee perfect predictions."] },
   { id: 'math1', ch: 1, draw: drawIntro4, title: 'The Math: A Line That Decides', notes: [
-    'The line: w₁x₁ + w₂x₂ + b = 0. x = features, w = weights, b = bias.',
-    'Positive result means one class (Pass), negative means the other (Fail).'] },
+    'The line: w₁x₁ + w₂x₂ + b = 0. x = features, w = weights (how much each feature counts), b = bias (shifts the line).',
+    'Click a dot: 2(6) + 1(8) − 15 = +5. A positive result is one class (Pass), a negative result is the other (Fail).',
+    'In a real SVM, the weights and bias are learned from the training data, not chosen by hand like these sliders.'] },
   { id: 'math2', ch: 1, draw: drawIntro5, title: 'The Math: The Widest Road', notes: [
-    'Margin width = 2 / ‖w‖.',
-    'The points on the dashed lines are the support vectors.'] },
+    'Margin width = 2 / ‖w‖, where ‖w‖ is the length of the weight vector.',
+    'To make the margin large, SVM makes ‖w‖ small while keeping every point on the correct side.',
+    'The points on the dashed lines are the support vectors: Aditya, Meera and Aarav.'] },
+  { id: 'deep', ch: 1, slide: 'deep', title: "SVM's Goal in One Line (optional)",
+    stepper: () => (DD.k < 4 ? (DD.k++, renderDeep(), true) : false), notes: [
+    'Optional: skip this screen if you are short on time.',
+    'Read it as: a wide road (½‖w‖²) plus a penalty for rule-breaking (C·Σξᵢ). Next or Space reveals one meaning at a time.',
+    'Real SVM solves this optimisation mathematically. The animations on this site only show the idea.'] },
   { id: 'l3', ch: 1, level: 3, notes: [
-    'C controls how strict SVM is about points on the wrong side.'] },
+    'Hard margin, like a classroom walkway: "No student may step into the walkway!" It only works when perfect separation is possible, and it is very sensitive to unusual points like Arjun.',
+    'Soft margin: "Try your best, a small slip is okay." It allows some violations, which suits real data. In soft margin, support vectors can also be points inside the margin or on the wrong side.',
+    'C is how strongly the teacher punishes rule-breaking: low C = forgiving, high C = strict. Hand over: but what if no straight road works at all?'] },
 
   { id: 'ch3', ch: 2, slide: 'title', notes: [
     'Recap: Max can find the widest road and deal with a troublemaker.',
@@ -1995,6 +2102,7 @@ function goStep(i) {
   $('next').disabled = false;
   $('prev').disabled = step === 0;
   if (cur.slide === 'quiz') { if (!QZ.t0) QZ.t0 = performance.now(); renderQuiz(); }
+  if (cur.slide === 'deep') renderDeep();
   $('c3').value = S[3].slider;
   syncSliders();
   canvas.style.cursor = 'default';
@@ -2013,6 +2121,7 @@ function startOver() {
   for (let i = 1; i <= 4; i++) S[i] = fresh(i);
   IS = freshIntro();
   Object.assign(QZ, { i: 0, picks: [], t0: 0, tEnd: 0 });
+  DD.k = 0;
   goStep(0);
 }
 
