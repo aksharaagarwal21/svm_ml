@@ -1,0 +1,1847 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Build the Widest Road</title>
+<style>
+  :root {
+    --bg: #f5f3ee;
+    --card: #ffffff;
+    --ink: #17202e;
+    --muted: #5a6577;
+    --line: #e2ddd2;
+    --red: #e03131;
+    --blue: #1c62d6;
+    --gold: #f5b400;
+    --good: #2b8a3e;
+    --bad: #c92a2a;
+    --warn: #c76a00;
+    --term: #6741d9;
+    --pass: #2f9e44;
+  }
+  * { box-sizing: border-box; }
+  html { font-size: clamp(15px, min(1.38vw, 2.45vh), 30px); }
+  body {
+    margin: 0; height: 100vh; height: 100dvh;
+    display: flex; flex-direction: column;
+    background: var(--bg); color: var(--ink);
+    font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    overflow: hidden; -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; cursor: pointer; }
+
+  /* ---------- header ---------- */
+  header { display: flex; align-items: center; gap: 1rem; padding: .7rem 1.2rem .6rem; }
+  .brand { display: flex; flex-direction: column; gap: .05rem; min-width: 0; }
+  .brand b { font-size: 1.3rem; font-weight: 800; letter-spacing: -.01em; white-space: nowrap; line-height: 1.15; }
+  .brand span { color: var(--muted); font-weight: 600; font-size: .7rem; white-space: nowrap; }
+  .dots { display: flex; align-items: center; gap: .45rem; margin-left: auto; }
+  .dot {
+    width: 2rem; height: 2rem; padding: 0; border-radius: 50%;
+    border: 2px solid var(--line); background: #fff; color: var(--muted);
+    font-weight: 800; font-size: .85rem; display: grid; place-items: center;
+  }
+  .dot.intro { width: 1.75rem; height: 1.75rem; font-size: .78rem; }
+  .dot.done { border-color: #b9c0cc; color: var(--ink); }
+  .dot.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .plabel { font-size: .62rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .parrow { color: var(--muted); font-weight: 800; margin: 0 .25rem; }
+  .nav { display: flex; gap: .5rem; }
+
+  .btn {
+    border: 2px solid var(--ink); background: #fff; color: var(--ink);
+    font-weight: 700; font-size: .95rem; line-height: 1.2;
+    padding: .5rem 1rem; border-radius: .65rem;
+    transition: transform .08s, background .15s;
+  }
+  .btn:hover { background: #eef1f6; }
+  .btn:active { transform: translateY(1px); }
+  .btn.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .btn.primary:hover { background: #1752b5; }
+  .btn.go { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .btn.go:hover { background: #2c3850; }
+  .btn.ghost { border-color: var(--line); }
+  .btn:disabled { opacity: .45; cursor: default; }
+
+  /* ---------- layout ---------- */
+  main { flex: 1; min-height: 0; display: flex; gap: 1.1rem; padding: 0 1.2rem 1.1rem; }
+  .stage { flex: 1 1 auto; position: relative; min-width: 0; }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+
+  .panel {
+    flex: 0 0 31%; min-width: 0;
+    background: var(--card); border-radius: 1.1rem;
+    padding: 1.15rem 1.3rem;
+    display: flex; flex-direction: column; gap: .75rem;
+    box-shadow: 0 1px 2px rgba(23,32,46,.06), 0 8px 24px rgba(23,32,46,.06);
+    overflow-y: auto;
+  }
+  .tag { font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--blue); }
+  h1 { margin: -.35rem 0 0; font-size: 1.7rem; line-height: 1.1; letter-spacing: -.015em; }
+  .say { margin: 0; font-size: 1rem; line-height: 1.38; color: #2c3546; }
+
+  .lvl { display: none; flex-direction: column; gap: .7rem; }
+  .lvl.on { display: flex; }
+  .row { display: flex; gap: .6rem; flex-wrap: wrap; }
+
+  .question {
+    font-size: 1.4rem; font-weight: 800; text-align: center;
+    background: #eef4ff; border-radius: .8rem; padding: .65rem .9rem;
+  }
+  button.question { width: 100%; border: 0; color: var(--ink); transition: background .15s; }
+  button.question:hover { background: #dfe9ff; }
+  .question small { display: block; font-size: .72rem; font-weight: 700; color: var(--blue); margin-top: .1rem; }
+  .status { margin: 0; font-size: 1rem; font-weight: 700; line-height: 1.35; }
+  .good { color: var(--good); }
+  .bad { color: var(--bad); }
+  .warn { color: var(--warn); }
+  .hint { margin: 0; font-size: .92rem; line-height: 1.35; color: var(--muted); }
+
+  .lbl { font-size: .74rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .big { font-size: 2.5rem; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+  .score { display: flex; flex-direction: column; gap: .35rem; }
+  .bar { height: .7rem; background: #edeae3; border-radius: 99px; overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--blue); border-radius: 99px; transition: width .12s; }
+  .bar.svm i { background: var(--gold); }
+  .sub { font-size: .9rem; color: var(--muted); font-weight: 600; }
+
+  .legend { display: grid; gap: .35rem; font-size: .85rem; color: #2c3546; padding-top: .2rem; border-top: 1px solid var(--line); }
+  .legend div { display: flex; align-items: center; gap: .6rem; }
+  .legend svg { width: 1.9rem; height: 1.15rem; flex: none; }
+
+  .slider { display: flex; flex-direction: column; gap: .2rem; }
+  .slider label { font-size: 1.05rem; font-weight: 700; display: flex; justify-content: space-between; align-items: baseline; }
+  .slider label span { font-size: .9rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .ends { display: flex; justify-content: space-between; font-size: .82rem; font-weight: 700; color: var(--muted); }
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 2.2rem; background: transparent; margin: 0; cursor: pointer; }
+  input[type=range]::-webkit-slider-runnable-track { height: .55rem; border-radius: 99px; background: linear-gradient(90deg, #b2f2bb, #ffe08a, #ffa8a8); }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 1.6rem; height: 1.6rem; margin-top: -.53rem; border-radius: 50%; background: #fff; border: .25rem solid var(--ink); }
+  input[type=range]::-moz-range-track { height: .55rem; border-radius: 99px; background: linear-gradient(90deg, #b2f2bb, #ffe08a, #ffa8a8); }
+  input[type=range]::-moz-range-thumb { width: 1.1rem; height: 1.1rem; border-radius: 50%; background: #fff; border: .25rem solid var(--ink); }
+
+  .readouts { display: grid; grid-template-columns: auto 1fr; gap: .4rem 1.4rem; align-items: end; }
+  .readouts > div { display: flex; flex-direction: column; gap: .3rem; }
+  .mid { font-size: 1.1rem; font-weight: 800; line-height: 1.2; }
+
+  /* ---------- intro ---------- */
+  .reveal { display: none; }
+  .reveal.on { display: block; animation: pop .4s ease-out both; }
+  @keyframes pop { from { opacity: 0; transform: translateY(6px) scale(.98); } to { opacity: 1; transform: none; } }
+  .callout { background: #eef4ff; font-size: 1.05rem; font-weight: 600; line-height: 1.38; border-radius: .8rem; padding: .7rem .95rem; }
+  .hl { color: var(--term); font-weight: 800; }
+  .pass { color: var(--pass); }
+  .fail { color: var(--red); }
+  .itext p { margin: 0; font-size: 1.12rem; line-height: 1.4; color: #2c3546; }
+  .itext p.lead { font-size: 1.3rem; font-weight: 800; line-height: 1.3; color: var(--ink); }
+  .itext p.note { font-size: .92rem; color: var(--muted); }
+  .parts { display: grid; gap: .4rem; }
+  .part {
+    display: grid; grid-template-columns: 5.4rem 1fr; gap: .4rem; align-items: baseline;
+    background: #f6f4ef; border-radius: .6rem; padding: .3rem .55rem; font-size: 1rem; line-height: 1.35; cursor: pointer;
+  }
+  .part b { font-size: 1.08rem; }
+  .part span { opacity: 0; transition: opacity .45s; }
+  .part.on span { opacity: 1; }
+  .eq { text-align: center; background: #f4f1ea; border-radius: .75rem; padding: .4rem .6rem; font-size: 1.7rem; font-weight: 800; color: var(--ink); }
+  .eq small { display: block; font-size: 1rem; font-weight: 700; color: #2c3546; }
+  .defs { display: grid; gap: .15rem; font-size: .95rem; line-height: 1.35; color: #2c3546; }
+  .defs b { color: var(--ink); }
+  .sliders { display: grid; }
+  .sl { display: grid; grid-template-columns: 2rem 1fr 2.6rem; align-items: center; gap: .5rem; font-size: 1.05rem; font-weight: 800; }
+  .sl output { text-align: right; font-variant-numeric: tabular-nums; }
+  .sl input[type=range] { height: 1.9rem; }
+  .sl input[type=range]::-webkit-slider-runnable-track { background: #dcd7cc; }
+  .sl input[type=range]::-moz-range-track { background: #dcd7cc; }
+  .rule { background: #eef4ff; border-radius: .75rem; padding: .5rem .85rem; font-size: 1rem; font-weight: 700; line-height: 1.4; }
+  .kline { margin: 0; background: #f3f0ff; border-radius: .6rem; padding: .45rem .7rem; font-size: .9rem; line-height: 1.4; color: #2c3546; }
+
+  /* ---------- quiz ---------- */
+  .quiz { position: absolute; inset: 0; z-index: 1; display: flex; }
+  .quiz[hidden] { display: none; }
+  .quiz-card {
+    flex: 1; min-width: 0; overflow-y: auto; background: #fff; border-radius: 1.1rem; padding: 1.4rem 1.7rem;
+    display: flex; flex-direction: column; gap: 1rem;
+    box-shadow: 0 1px 2px rgba(23,32,46,.06), 0 8px 24px rgba(23,32,46,.06);
+  }
+  .quiz-card h2 { margin: 0; font-size: 1.75rem; line-height: 1.25; letter-spacing: -.01em; }
+  .opts { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+  .opt {
+    display: flex; align-items: center; gap: .8rem; min-height: 4.2rem; text-align: left;
+    padding: .7rem 1rem; border: 2px solid var(--line); border-radius: .9rem; background: #fff;
+    font-size: 1.15rem; font-weight: 700; line-height: 1.3; color: var(--ink); transition: background .15s, border-color .15s;
+  }
+  .opt:hover:not(:disabled) { background: #f6f4ef; border-color: #cfc8b8; }
+  .opt:disabled { cursor: default; }
+  .opt i { font-style: normal; flex: none; width: 2.1rem; height: 2.1rem; border-radius: 50%; display: grid; place-items: center; background: #eef1f6; font-weight: 800; }
+  .opt.right { background: #e9f7ee; border-color: var(--pass); }
+  .opt.right i { background: var(--pass); color: #fff; }
+  .opt.wrong { background: #fdecec; border-color: var(--red); }
+  .opt.wrong i { background: var(--red); color: #fff; }
+  .qwhy { margin: 0; min-height: 1.5em; font-size: 1.1rem; line-height: 1.4; }
+  .quiz-card .btn { align-self: flex-start; font-size: 1.05rem; }
+  .review { display: grid; gap: .55rem; }
+  .review div { display: flex; gap: .7rem; align-items: baseline; font-size: 1.02rem; line-height: 1.35; }
+  .review small { display: block; color: var(--muted); font-size: .92rem; font-weight: 600; }
+  .qdots { display: flex; gap: .5rem; }
+  .qdots i { width: 1.1rem; height: 1.1rem; border-radius: 50%; background: #e3ded3; }
+  .qdots i.now { background: #fff; border: 3px solid var(--ink); }
+  .qdots i.ok { background: var(--pass); }
+  .qdots i.no { background: var(--red); }
+
+  /* ---------- "Explain more" notes ---------- */
+  .key-top { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .2rem; }
+  .explain-btn {
+    border: 2px solid #ecd28a; background: #fff; color: #7a5800; font-weight: 800; font-size: .74rem;
+    padding: .2rem .65rem; border-radius: 99px; white-space: nowrap;
+  }
+  .explain-btn:hover { background: #fff2c4; }
+  .explain {
+    position: absolute; inset: 0; z-index: 2; padding: .5rem;
+    display: flex; align-items: flex-start; justify-content: center;
+    background: rgba(245,243,238,.6); backdrop-filter: blur(2px);
+  }
+  .explain[hidden] { display: none; }
+  .explain-card {
+    position: relative; width: 100%; max-width: 48rem; max-height: 100%; overflow-y: auto;
+    background: #fff; border-radius: 1.1rem; padding: 1.1rem 1.5rem 1.2rem;
+    box-shadow: 0 2px 4px rgba(23,32,46,.08), 0 16px 40px rgba(23,32,46,.16);
+    animation: pop .3s ease-out both;
+  }
+  .explain-card h2 { margin: .15rem 2.5rem .7rem 0; font-size: 1.45rem; line-height: 1.15; letter-spacing: -.01em; }
+  .explain-card ul { margin: 0; padding-left: 1.25rem; display: grid; gap: .55rem; }
+  .explain-card li { font-size: 1.02rem; line-height: 1.42; }
+  .explain-card li::marker { color: var(--gold); }
+  .explain-close {
+    position: absolute; top: .8rem; right: .9rem; width: 2.2rem; height: 2.2rem; padding: 0;
+    border-radius: 50%; border: 2px solid var(--line); background: #fff; font-size: 1rem; font-weight: 800;
+  }
+  .explain-close:hover { background: #eef1f6; }
+  .math { margin-top: .9rem; background: #f4f1ea; border-radius: .7rem; padding: .65rem .95rem; font-size: .95rem; line-height: 1.45; }
+  .math code { font-family: Consolas, "Cascadia Mono", monospace; font-size: .95em; background: #fff; padding: 0 .3rem; border-radius: .3rem; white-space: nowrap; }
+  .math b { display: block; font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: .2rem; }
+  .math[hidden] { display: none; }
+
+  .key { margin-top: auto; background: #fff7dc; border-left: .35rem solid var(--gold); border-radius: .7rem; padding: .7rem 1rem; }
+  .key b { display: block; font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: #8a6500; }
+  .key p { margin: 0; font-size: .93rem; line-height: 1.38; }
+
+  /* ---------- narrow screens: stack ---------- */
+  @media (max-width: 760px), (max-aspect-ratio: 4/5) {
+    html { font-size: 16px; }
+    body { height: auto; min-height: 100vh; overflow: auto; }
+    header { flex-wrap: wrap; padding: .7rem 1rem; }
+    .brand span { display: none; }
+    main { flex-direction: column; padding: 0 1rem 1rem; }
+    .stage { flex: none; height: calc((100vw - 2rem) * .64); }
+    .panel { flex: none; overflow: visible; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand"><b>🛣️ Build the Widest Road</b><span>a Support Vector Machine story</span></div>
+  <div class="dots" id="dots">
+    <span class="plabel">Intro</span>
+    <button class="dot intro" data-step="0" aria-label="Intro 1">1</button>
+    <button class="dot intro" data-step="1" aria-label="Intro 2">2</button>
+    <button class="dot intro" data-step="2" aria-label="Intro 3">3</button>
+    <button class="dot intro" data-step="3" aria-label="Intro 4">4</button>
+    <button class="dot intro" data-step="4" aria-label="Intro 5">5</button>
+    <span class="parrow" aria-hidden="true">→</span>
+    <span class="plabel">Levels</span>
+    <button class="dot" data-step="5" aria-label="Level 1">1</button>
+    <button class="dot" data-step="6" aria-label="Level 2">2</button>
+    <button class="dot" data-step="7" aria-label="Level 3">3</button>
+    <button class="dot" data-step="8" aria-label="Level 4">4</button>
+    <span class="parrow" aria-hidden="true">→</span>
+    <span class="plabel">Quiz</span>
+    <button class="dot intro" data-step="9" aria-label="Quiz" title="Quiz">?</button>
+  </div>
+  <div class="nav">
+    <button class="btn ghost" id="prev" aria-label="Back">←</button>
+    <button class="btn go" id="next">Next Level →</button>
+    <button class="btn ghost" id="fs" aria-label="Full screen" title="Full screen (F)">⛶</button>
+  </div>
+</header>
+
+<main>
+  <section class="stage">
+    <canvas id="map" role="img" aria-label="Map with a red village, a blue village and a road between them"></canvas>
+    <div class="explain" id="explainBox" hidden>
+      <div class="explain-card" role="dialog" aria-labelledby="exTitle">
+        <button class="explain-close" id="exClose" aria-label="Close notes">✕</button>
+        <div class="tag">📖 Explain more</div>
+        <h2 id="exTitle"></h2>
+        <ul id="exList"></ul>
+        <div class="math" id="exMath" hidden></div>
+      </div>
+    </div>
+    <div class="quiz" id="quizBox" hidden>
+      <div class="quiz-card">
+        <div class="tag" id="qNum"></div>
+        <h2 id="qText"></h2>
+        <div class="opts" id="qOpts"></div>
+        <p class="qwhy" id="qWhy"></p>
+        <button class="btn go" id="qNext"></button>
+      </div>
+    </div>
+  </section>
+
+  <aside class="panel">
+    <div class="tag" id="tag">Level 1 of 4</div>
+    <h1 id="title">Any Road</h1>
+    <p class="say" id="say"></p>
+
+    <!-- Intro 1 -->
+    <div class="lvl itext" data-intro="1">
+      <p>Every day, computers sort things into groups.</p>
+      <p>This is called <b class="hl">Classification</b>.</p>
+      <p>Today we'll learn one of the smartest ways to do it: <b class="hl">Support Vector Machine (SVM)</b>.</p>
+    </div>
+
+    <!-- Intro 2 -->
+    <div class="lvl itext" data-intro="2">
+      <p>Each dot is one student.</p>
+      <p><b class="hl">Features</b> = what we measure (hours studied, classes attended).</p>
+      <p><b class="hl">Label</b> = the answer we already know (<b class="pass">Pass</b> or <b class="fail">Fail</b>).</p>
+      <p>The computer learns from labeled examples. This is called <b class="hl">Supervised Learning</b>.</p>
+    </div>
+
+    <!-- Intro 3 -->
+    <div class="lvl itext" data-intro="3">
+      <p class="lead">SVM finds the best line to separate two groups: the line with the widest gap between them.</p>
+      <div class="parts">
+        <div class="part" data-part="0"><b class="hl">Support</b><span>→ only a few points hold up (support) the line</span></div>
+        <div class="part" data-part="1"><b class="hl">Vector</b><span>→ each point is a vector, a list of numbers like [6, 8]</span></div>
+        <div class="part" data-part="2"><b class="hl">Machine</b><span>→ a method the computer follows</span></div>
+      </div>
+      <div class="row">
+        <button class="btn primary" id="revealBtn">Reveal: Support</button>
+        <button class="btn ghost" id="replay3">↺ Replay</button>
+      </div>
+      <p>Many lines can separate the groups. SVM picks the one with the widest road.</p>
+    </div>
+
+    <!-- Intro 4 -->
+    <div class="lvl itext" data-intro="4">
+      <p>You already know the line y = mx + c. SVM writes a line like this:</p>
+      <div class="eq">w₁x₁ + w₂x₂ + b = 0</div>
+      <div class="defs">
+        <div><b>x₁, x₂</b> = features (hours, classes)</div>
+        <div><b>w₁, w₂</b> = weights (how important each feature is)</div>
+        <div><b>b</b> = bias (moves the line)</div>
+      </div>
+      <div class="sliders">
+        <label class="sl"><span>w₁</span><input type="range" id="w1s" min="0" max="4" step="0.5"><output id="w1v"></output></label>
+        <label class="sl"><span>w₂</span><input type="range" id="w2s" min="0" max="4" step="0.5"><output id="w2v"></output></label>
+        <label class="sl"><span>b</span><input type="range" id="bs" min="-30" max="0" step="1"><output id="bv"></output></label>
+      </div>
+      <div class="rule">Result &gt; 0 → <span class="pass">Pass</span> | Result &lt; 0 → <span class="fail">Fail</span>. The sign decides the group.</div>
+    </div>
+
+    <!-- Intro 5 -->
+    <div class="lvl itext" data-intro="5">
+      <div class="eq"><small><b class="hl">Margin</b> (road width) =</small>2 / ‖w‖</div>
+      <p>The points touching the dashed lines are the <b class="hl">Support Vectors</b>.</p>
+      <p>Smaller ‖w‖ means a wider road.</p>
+      <p>SVM's goal: make the road as wide as possible while keeping every point on the correct side.</p>
+      <p class="note">You don't need to solve this by hand. The computer does it. Let's see it in action!</p>
+      <button class="btn go" id="startGame">Start the Game → Level 1</button>
+    </div>
+
+    <!-- Level 1 -->
+    <div class="lvl" data-level="1">
+      <button class="question ask" id="ask1">Which line is the best?<small id="ask1hint">Click to reveal</small></button>
+      <div class="callout reveal" id="ans1"></div>
+      <p class="status" id="s1"></p>
+      <div class="row">
+        <button class="btn primary" id="others">Show other roads</button>
+        <button class="btn ghost" data-reset="1">↺ Reset</button>
+      </div>
+    </div>
+
+    <!-- Level 2 -->
+    <div class="lvl" data-level="2">
+      <div class="score">
+        <span class="lbl">Road width</span>
+        <span class="big" id="w2">0 m</span>
+        <div class="bar" id="bar2"><i></i></div>
+        <span class="sub" id="sub2"></span>
+      </div>
+      <p class="hint" id="hint2"></p>
+      <div class="row">
+        <button class="btn primary" id="svm2">✨ Let SVM Try</button>
+        <button class="btn ghost" data-reset="2">↺ Reset</button>
+      </div>
+      <div class="legend">
+        <div>
+          <svg viewBox="0 0 38 22" aria-hidden="true"><rect x="0" y="4" width="38" height="14" rx="2" fill="#5d636e"/><line x1="2" y1="11" x2="36" y2="11" stroke="#ffd43b" stroke-width="2.6" stroke-dasharray="5 4"/></svg>
+          <span>Road center = <b>decision boundary</b></span>
+        </div>
+        <div>
+          <svg viewBox="0 0 38 22" aria-hidden="true"><rect x="0" y="4" width="38" height="14" rx="2" fill="#5d636e"/><path d="M19 5.5v11M15.5 8.5 19 5l3.5 3.5M15.5 13.5 19 17l3.5-3.5" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Road width = <b>margin</b></span>
+        </div>
+        <div>
+          <svg viewBox="0 0 38 22" aria-hidden="true"><circle cx="19" cy="11" r="10" fill="rgba(255,196,0,.4)"/><circle cx="19" cy="11" r="7.5" fill="none" stroke="#f5b400" stroke-width="2.5"/><circle cx="19" cy="11" r="5" fill="#1c62d6" stroke="#fff" stroke-width="1.5"/></svg>
+          <span>Glowing houses = <b>support vectors</b></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Level 3 -->
+    <div class="lvl" data-level="3">
+      <div class="slider">
+        <label for="c3"><span style="color:var(--ink);font-size:1.05rem">C (strictness)</span><span id="cval"></span></label>
+        <input type="range" id="c3" min="0" max="100" value="0">
+        <div class="ends"><span>Relaxed</span><span>Strict</span></div>
+      </div>
+      <div class="readouts">
+        <div><span class="lbl">Road width</span><span class="big" id="w3">0 m</span></div>
+        <div><span class="lbl">Troublemaker</span><span class="mid" id="tm3"></span></div>
+      </div>
+      <div class="row">
+        <button class="btn ghost" data-reset="3">↺ Reset</button>
+      </div>
+    </div>
+
+    <!-- Level 4 -->
+    <div class="lvl" data-level="4">
+      <p class="kline"><b class="hl">Kernel Trick</b>: add a new feature, like z&nbsp;=&nbsp;x²&nbsp;+&nbsp;y², to lift the points into 3D where a flat plane can separate them.</p>
+      <p class="status" id="s4"></p>
+      <div class="row">
+        <button class="btn primary" id="lift">⬆ Lift to 3D</button>
+      </div>
+    </div>
+
+    <!-- Quiz -->
+    <div class="lvl" data-quiz="1">
+      <div class="readouts">
+        <div><span class="lbl">Time left</span><span class="big" id="qTimer">2:00</span></div>
+        <div><span class="lbl">Score</span><span class="big" id="qScore">0 / 5</span></div>
+      </div>
+      <div class="qdots" id="qDots"></div>
+    </div>
+
+    <div class="key" id="keybox">
+      <div class="key-top"><b>Key idea</b><button class="explain-btn" id="explainBtn" title="Explain more (E)">📖 Explain more</button></div>
+      <p id="key"></p>
+    </div>
+  </aside>
+</main>
+
+<script>
+(() => {
+'use strict';
+
+/* =========================================================
+   Constants & text
+   ========================================================= */
+const W = 1000, H = 640, CX = 500, CY = 320;   // map size in "world" units
+const RED = -1, BLUE = 1;
+const HOUSE_R = 14;
+const METRE = 10;          // world units per metre in the width readout
+const HARD_C = 1000;       // "no rule breaking" SVM for Level 2
+const C_MIN = 0.25, C_MAX = 15;
+const FONT = '"Segoe UI", system-ui, -apple-system, Arial, sans-serif';
+
+const COL = {
+  red: '#e03131', blue: '#1c62d6', ink: '#17202e',
+  map: '#e8efe0', grid: 'rgba(23,32,46,0.055)', mapEdge: 'rgba(23,32,46,0.14)',
+  asphalt: 'rgba(74,80,92,0.80)', center: '#ffd43b', gold: '#f5b400',
+  tint: { '-1': 'rgba(224,49,49,0.08)', '1': 'rgba(28,98,214,0.08)' },
+};
+const OTHER_COLORS = ['#7048e8', '#0ca678', '#f76707', '#d6336c', '#1098ad'];
+
+const TEXT = {
+  1: { title: 'Any Road',
+       say: 'Drag the road so the red village is on one side and the blue village is on the other.',
+       key: 'Many different roads can split the two villages. So how do we choose the best one?' },
+  2: { title: 'The Widest Road',
+       say: 'A wider road is a safer road: it leaves the most space between the road and every house.',
+       key: 'SVM finds the widest possible road. Only the houses touching its edges, the support vectors, decide where it goes.' },
+  3: { title: 'The Troublemaker',
+       say: 'One red house was built inside the blue village. How strict should the road be about it?',
+       key: 'C sets how strict SVM is. Low C lets a few houses break the rules to keep the road wide. High C fits every house but squeezes the road.' },
+  4: { title: 'The Impossible Level',
+       say: 'The blue village surrounds the red one, so no straight road can split them, unless we lift the houses up.',
+       key: 'Kernel trick: look at the houses in a new way (give them height) so a flat cut works. Back on the map, that cut becomes a curve.' },
+};
+
+/* =========================================================
+   Data
+   ========================================================= */
+const P = (x, y, c, tm) => ({ x, y, c, tm: !!tm });
+
+const VILLAGES = [
+  P(140, 330, RED), P(200, 450, RED), P(265, 345, RED), P(130, 515, RED), P(300, 520, RED),
+  P(225, 585, RED), P(355, 430, RED), P(85, 420, RED), P(368, 572, RED), P(205, 235, RED), P(305, 250, RED),
+  P(640, 140, BLUE), P(760, 210, BLUE), P(700, 300, BLUE), P(860, 150, BLUE), P(820, 330, BLUE), P(605, 260, BLUE),
+  P(905, 270, BLUE), P(735, 80, BLUE), P(655, 395, BLUE), P(880, 430, BLUE), P(770, 465, BLUE),
+];
+
+const TROUBLE_VILLAGES = [
+  P(120, 180, RED), P(215, 120, RED), P(190, 300, RED), P(290, 210, RED), P(105, 430, RED), P(250, 410, RED),
+  P(340, 330, RED), P(185, 545, RED), P(320, 500, RED), P(380, 160, RED), P(100, 580, RED),
+  P(640, 250, BLUE), P(720, 330, BLUE), P(790, 190, BLUE), P(840, 300, BLUE), P(690, 460, BLUE), P(800, 420, BLUE),
+  P(900, 360, BLUE), P(870, 520, BLUE), P(740, 560, BLUE), P(910, 200, BLUE), P(620, 560, BLUE), P(620, 390, BLUE),
+  P(700, 140, RED, true),   // the troublemaker
+];
+
+function rng(seed) { return () => (seed = (seed * 16807) % 2147483647) / 2147483647; }
+
+function ringVillages() {
+  const r = rng(11), pts = [P(CX + 6, CY - 4, RED)];
+  for (let i = 0; i < 9; i++) {
+    const a = i / 9 * Math.PI * 2 + r() * 0.5, d = 42 + r() * 50;
+    pts.push(P(CX + d * Math.cos(a), CY + d * Math.sin(a), RED));
+  }
+  for (let i = 0; i < 18; i++) {
+    const a = i / 18 * Math.PI * 2 + (r() - 0.5) * 0.22, d = 190 + r() * 48;
+    pts.push(P(CX + d * Math.cos(a), CY + d * Math.sin(a), BLUE));
+  }
+  return pts;
+}
+
+const copyPts = pts => pts.map(p => ({ ...p }));
+
+/* =========================================================
+   Linear SVM (SMO with maximal-violating-pair selection)
+   Returns the road: unit normal n, offset c (n·x = c), half-width hw,
+   and f(p) = signed position in "road half-widths" (= w·x + b).
+   ========================================================= */
+function svmTrain(pts, C) {
+  const n = pts.length;
+  const X = pts.map(p => [(p.x - CX) / 100, (p.y - CY) / 100]);
+  const y = pts.map(p => p.c);
+  const Q = [];
+  for (let i = 0; i < n; i++) {
+    Q[i] = new Float64Array(n);
+    for (let j = 0; j < n; j++) Q[i][j] = y[i] * y[j] * (X[i][0] * X[j][0] + X[i][1] * X[j][1]);
+  }
+  const a = new Float64Array(n), G = new Float64Array(n).fill(-1);
+  for (let it = 0; it < 50000; it++) {
+    let i = -1, j = -1, Gmax = -Infinity, Gmin = Infinity;
+    for (let t = 0; t < n; t++) {
+      const v = -y[t] * G[t];
+      const up = (y[t] > 0 && a[t] < C) || (y[t] < 0 && a[t] > 0);
+      const low = (y[t] > 0 && a[t] > 0) || (y[t] < 0 && a[t] < C);
+      if (up && v > Gmax) { Gmax = v; i = t; }
+      if (low && v < Gmin) { Gmin = v; j = t; }
+    }
+    if (i < 0 || j < 0 || Gmax - Gmin < 1e-6) break;
+    const ai = a[i], aj = a[j];
+    if (y[i] !== y[j]) {
+      let q = Q[i][i] + Q[j][j] + 2 * Q[i][j]; if (q <= 0) q = 1e-12;
+      const d = (-G[i] - G[j]) / q, diff = a[i] - a[j];
+      a[i] += d; a[j] += d;
+      if (diff > 0) { if (a[j] < 0) { a[j] = 0; a[i] = diff; } }
+      else if (a[i] < 0) { a[i] = 0; a[j] = -diff; }
+      if (diff > 0) { if (a[i] > C) { a[i] = C; a[j] = C - diff; } }
+      else if (a[j] > C) { a[j] = C; a[i] = C + diff; }
+    } else {
+      let q = Q[i][i] + Q[j][j] - 2 * Q[i][j]; if (q <= 0) q = 1e-12;
+      const d = (G[i] - G[j]) / q, sum = a[i] + a[j];
+      a[i] -= d; a[j] += d;
+      if (sum > C) { if (a[i] > C) { a[i] = C; a[j] = sum - C; } }
+      else if (a[j] < 0) { a[j] = 0; a[i] = sum; }
+      if (sum > C) { if (a[j] > C) { a[j] = C; a[i] = sum - C; } }
+      else if (a[i] < 0) { a[i] = 0; a[j] = sum; }
+    }
+    const di = a[i] - ai, dj = a[j] - aj;
+    for (let k = 0; k < n; k++) G[k] += Q[i][k] * di + Q[j][k] * dj;
+  }
+  // bias
+  let ub = Infinity, lb = -Infinity, nf = 0, sf = 0;
+  for (let t = 0; t < n; t++) {
+    const yG = y[t] * G[t];
+    if (a[t] >= C) { if (y[t] < 0) ub = Math.min(ub, yG); else lb = Math.max(lb, yG); }
+    else if (a[t] <= 0) { if (y[t] > 0) ub = Math.min(ub, yG); else lb = Math.max(lb, yG); }
+    else { nf++; sf += yG; }
+  }
+  const rho = nf > 0 ? sf / nf : (ub + lb) / 2;
+  let w0 = 0, w1 = 0;
+  for (let t = 0; t < n; t++) { w0 += a[t] * y[t] * X[t][0]; w1 += a[t] * y[t] * X[t][1]; }
+  const wn = Math.hypot(w0, w1);
+  if (!(wn > 1e-9)) return { n: { x: 1, y: 0 }, c: CX, hw: 0, f: () => 0 };
+  const nx = w0 / wn, ny = w1 / wn;
+  const c = 100 * (rho + (w0 * CX + w1 * CY) / 100) / wn;
+  const hw = 100 / wn;
+  return { n: { x: nx, y: ny }, c, hw, f: p => (nx * p.x + ny * p.y - c) / hw };
+}
+
+/* =========================================================
+   Geometry helpers
+   ========================================================= */
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const clamp01 = v => clamp(v, 0, 1);
+const lerp = (a, b, t) => a + (b - a) * t;
+const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const clampPt = (p, m) => ({ x: clamp(p.x, m, W - m), y: clamp(p.y, m, H - m) });
+
+function lineFromHandles(h1, h2) {
+  let dx = h2.x - h1.x, dy = h2.y - h1.y;
+  const L = Math.hypot(dx, dy) || 1; dx /= L; dy /= L;
+  const n = { x: -dy, y: dx };
+  return { n, c: n.x * h1.x + n.y * h1.y };
+}
+
+// The part of the line n·x = c inside a rectangle (or null).
+function clipLine(n, c, x0, y0, x1, y1) {
+  const d = { x: n.y, y: -n.x }, p = { x: n.x * c, y: n.y * c };
+  let tmin = -1e9, tmax = 1e9;
+  for (const [pd, pp, lo, hi] of [[d.x, p.x, x0, x1], [d.y, p.y, y0, y1]]) {
+    if (Math.abs(pd) < 1e-9) { if (pp < lo || pp > hi) return null; }
+    else {
+      let t0 = (lo - pp) / pd, t1 = (hi - pp) / pd;
+      if (t0 > t1) [t0, t1] = [t1, t0];
+      tmin = Math.max(tmin, t0); tmax = Math.min(tmax, t1);
+    }
+  }
+  if (tmin > tmax) return null;
+  return [{ x: p.x + d.x * tmin, y: p.y + d.y * tmin }, { x: p.x + d.x * tmax, y: p.y + d.y * tmax }];
+}
+
+function handlesFromLine(n, c) {
+  const seg = clipLine(n, c, 60, 60, W - 60, H - 60) || clipLine(n, c, 0, 0, W, H);
+  if (!seg) return [{ x: CX, y: 120 }, { x: CX, y: 520 }];
+  const [a, b] = seg;
+  return [{ x: lerp(a.x, b.x, 0.2), y: lerp(a.y, b.y, 0.2) }, { x: lerp(a.x, b.x, 0.8), y: lerp(a.y, b.y, 0.8) }];
+}
+
+// Which side is which village on, which houses are on the wrong side, and the closest house.
+function classify(pts, n, c) {
+  let errPlus = 0, errMinus = 0;
+  for (const p of pts) {
+    const s = n.x * p.x + n.y * p.y - c;
+    if (p.c * s <= 0) errPlus++;
+    if (p.c * s >= 0) errMinus++;
+  }
+  const orient = errPlus <= errMinus ? 1 : -1;
+  const wrong = new Set();
+  let minDist = Infinity;
+  for (const p of pts) {
+    const s = (n.x * p.x + n.y * p.y - c) * orient;
+    if (p.c * s <= 0) wrong.add(p);
+    minDist = Math.min(minDist, Math.abs(s));
+  }
+  return { orient, wrong, minDist };
+}
+
+// Smoothly animated road: anchor point (closest to the map centre), normal angle, half-width.
+function roadTarget(n, c, hw) {
+  const k = n.x * CX + n.y * CY - c;
+  return { ax: CX - n.x * k, ay: CY - n.y * k, ang: Math.atan2(n.y, n.x), hw };
+}
+function approach(disp, tgt, f) {
+  if (!disp) return { ...tgt };
+  let da = tgt.ang - disp.ang;
+  while (da > Math.PI) da -= 2 * Math.PI;
+  while (da < -Math.PI) da += 2 * Math.PI;
+  if (da > Math.PI / 2) da -= Math.PI; else if (da < -Math.PI / 2) da += Math.PI;   // n and -n are the same road
+  disp.ang += da * f;
+  disp.ax += (tgt.ax - disp.ax) * f;
+  disp.ay += (tgt.ay - disp.ay) * f;
+  disp.hw += (tgt.hw - disp.hw) * f;
+  disp.settled = Math.abs(da) < 0.003 && Math.hypot(tgt.ax - disp.ax, tgt.ay - disp.ay) < 0.8 && Math.abs(tgt.hw - disp.hw) < 0.8;
+  return disp;
+}
+function roadOf(disp) {
+  const n = { x: Math.cos(disp.ang), y: Math.sin(disp.ang) };
+  return { n, c: n.x * disp.ax + n.y * disp.ay, hw: disp.hw };
+}
+
+// Level 1: a handful of different roads that all work.
+function otherRoads(pts) {
+  const cand = [];
+  for (let deg = 0; deg < 180; deg++) {
+    const a = deg * Math.PI / 180, n = { x: Math.cos(a), y: Math.sin(a) };
+    let rMin = Infinity, rMax = -Infinity, bMin = Infinity, bMax = -Infinity;
+    for (const p of pts) {
+      const v = n.x * p.x + n.y * p.y;
+      if (p.c < 0) { rMin = Math.min(rMin, v); rMax = Math.max(rMax, v); }
+      else { bMin = Math.min(bMin, v); bMax = Math.max(bMax, v); }
+    }
+    let lo, hi;
+    if (rMax < bMin) { lo = rMax; hi = bMin; } else if (bMax < rMin) { lo = bMax; hi = rMin; } else continue;
+    if (hi - lo > 70) cand.push({ n, lo, hi });
+  }
+  const at = [0.06, 0.3, 0.5, 0.7, 0.94], frac = [0.22, 0.75, 0.5, 0.28, 0.8];
+  return at.map((q, i) => {
+    const k = cand[Math.round(q * (cand.length - 1))];
+    return { n: k.n, c: k.lo + frac[i] * (k.hi - k.lo), color: OTHER_COLORS[i], label: 'ABCDE'[i] };
+  });
+}
+
+const fmt = w => Math.round(w / METRE) + ' m';
+const sliderToC = v => Math.pow(10, Math.log10(C_MIN) + v / 100 * (Math.log10(C_MAX) - Math.log10(C_MIN)));
+
+/* =========================================================
+   Level state
+   ========================================================= */
+function fresh(level) {
+  if (level === 1) {
+    return { pts: copyPts(VILLAGES), h: [{ x: 430, y: 330 }, { x: 570, y: 330 }], others: null, best: null };
+  }
+  if (level === 2) {
+    const s = { pts: copyPts(VILLAGES), h: [{ x: 430, y: 110 }, { x: 430, y: 530 }], mode: 'user', disp: null, revealed: false, tau: 0.22 };
+    s.svm = svmTrain(s.pts, HARD_C);
+    const { n, c } = lineFromHandles(s.h[0], s.h[1]);
+    s.best = 2 * classify(s.pts, n, c).minDist;
+    return s;
+  }
+  if (level === 3) {
+    const s = { pts: copyPts(TROUBLE_VILLAGES), slider: 0, disp: null };
+    s.C = sliderToC(s.slider);
+    s.svm = svmTrain(s.pts, s.C);
+    return s;
+  }
+  const pts = ringVillages();
+  const rad = p => Math.hypot(p.x - CX, p.y - CY);
+  const rIn = Math.max(...pts.filter(p => p.c === RED).map(rad));
+  const rOut = Math.min(...pts.filter(p => p.c === BLUE).map(rad));
+  return { pts, h: [{ x: 500, y: 110 }, { x: 500, y: 530 }], phase: 'flat', t0: 0, az: 0, azFrom: 0, autoRot: true,
+           rIn, rOut, rCut: (rIn + rOut) / 2 };
+}
+
+const S = {};
+for (let i = 1; i <= 4; i++) S[i] = fresh(i);
+let level = clamp(parseInt(location.hash.slice(1), 10) || 1, 1, 4);
+
+/* =========================================================
+   Canvas setup
+   ========================================================= */
+const $ = id => document.getElementById(id);
+const canvas = $('map'), ctx = canvas.getContext('2d');
+const view = { s: 1, offx: 0, offy: 0, dpr: 1 };
+
+let started = false;
+function resize() {
+  const r = canvas.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+  const w = Math.max(1, Math.round(r.width * dpr)), h = Math.max(1, Math.round(r.height * dpr));
+  if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }   // resizing clears the canvas
+  const s = Math.min(r.width / W, r.height / H);
+  Object.assign(view, { s, dpr, offx: (r.width - W * s) / 2, offy: 0 });
+  if (started) render(performance.now(), 0);   // repaint now, so there is no blank frame
+}
+new ResizeObserver(resize).observe(canvas.parentElement);
+resize();
+
+function toWorld(e) {
+  const r = canvas.getBoundingClientRect();
+  return { x: (e.clientX - r.left - view.offx) / view.s, y: (e.clientY - r.top - view.offy) / view.s };
+}
+
+/* =========================================================
+   Drawing primitives
+   ========================================================= */
+function rr(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+function circle(x, y, r) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); }
+
+function drawMapBg(alpha = 1) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  rr(0, 0, W, H, 18);
+  ctx.fillStyle = COL.map; ctx.fill();
+  ctx.strokeStyle = COL.mapEdge; ctx.lineWidth = 2; ctx.stroke();
+  ctx.clip();
+  ctx.strokeStyle = COL.grid; ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  for (let x = 50; x < W; x += 50) { ctx.moveTo(x, 0); ctx.lineTo(x, H); }
+  for (let y = 40; y < H; y += 50) { ctx.moveTo(0, y); ctx.lineTo(W, y); }
+  ctx.stroke();
+  ctx.restore();
+}
+function clipMap() { rr(0, 0, W, H, 18); ctx.clip(); }
+
+// Work in a frame where the road runs along local x and local +y is the normal n.
+function inLineFrame(n, c, fn) {
+  ctx.save();
+  ctx.translate(n.x * c, n.y * c);
+  ctx.rotate(Math.atan2(-n.x, n.y));
+  fn();
+  ctx.restore();
+}
+function hline(y) { ctx.beginPath(); ctx.moveTo(-2500, y); ctx.lineTo(2500, y); ctx.stroke(); }
+
+function drawTint(n, c, orient) {
+  inLineFrame(n, c, () => {
+    ctx.fillStyle = COL.tint[orient]; ctx.fillRect(-3000, 0, 6000, 3000);
+    ctx.fillStyle = COL.tint[-orient]; ctx.fillRect(-3000, -3000, 6000, 3000);
+  });
+}
+
+function drawThinRoad(n, c) {
+  inLineFrame(n, c, () => {
+    ctx.strokeStyle = '#4a505c'; ctx.lineWidth = 12; hline(0);
+    ctx.strokeStyle = COL.center; ctx.lineWidth = 3; ctx.setLineDash([14, 12]); hline(0); ctx.setLineDash([]);
+  });
+}
+
+function drawRoad(n, c, hw) {
+  if (hw < 8) return drawThinRoad(n, c);
+  inLineFrame(n, c, () => {
+    ctx.fillStyle = COL.asphalt; ctx.fillRect(-2500, -hw, 5000, 2 * hw);
+    ctx.strokeStyle = 'rgba(23,32,46,0.35)'; ctx.lineWidth = 1.5; hline(-hw - 2.5); hline(hw + 2.5);
+    ctx.strokeStyle = 'rgba(255,255,255,0.95)'; ctx.lineWidth = 4; hline(-hw); hline(hw);
+    ctx.strokeStyle = COL.center; ctx.lineWidth = 5; ctx.setLineDash([28, 20]); hline(0); ctx.setLineDash([]);
+  });
+}
+
+function drawHouse(p, o = {}) {
+  const { x, y } = p;
+  if (o.glow) {
+    const t = performance.now() / 1000;
+    circle(x, y, HOUSE_R + 12 + 3 * Math.sin(t * 4));
+    ctx.fillStyle = 'rgba(255,196,0,0.35)'; ctx.fill();
+    ctx.save();
+    ctx.shadowColor = COL.gold; ctx.shadowBlur = 18;
+    circle(x, y, HOUSE_R + 5); ctx.strokeStyle = COL.gold; ctx.lineWidth = 5; ctx.stroke();
+    ctx.restore();
+  }
+  if (o.wrong) {
+    circle(x, y, HOUSE_R + 8);
+    ctx.setLineDash([5, 4]); ctx.strokeStyle = COL.ink; ctx.lineWidth = 3; ctx.stroke(); ctx.setLineDash([]);
+  }
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.22)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 2;
+  circle(x, y, HOUSE_R); ctx.fillStyle = p.c === RED ? COL.red : COL.blue; ctx.fill();
+  ctx.restore();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 3.5; ctx.stroke();
+}
+
+function drawHandles(h, hot) {
+  h.forEach((p, i) => {
+    const big = hot && hot.type === 'handle' && hot.i === i;
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.25)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 2;
+    circle(p.x, p.y, big ? 19 : 16); ctx.fillStyle = '#fff'; ctx.fill();
+    ctx.restore();
+    ctx.strokeStyle = COL.ink; ctx.lineWidth = 4; ctx.stroke();
+    circle(p.x, p.y, 5); ctx.fillStyle = COL.ink; ctx.fill();
+  });
+}
+
+function pill(text, x, y, { bg = COL.ink, fg = '#fff', size = 18, align = 'center' } = {}) {
+  ctx.font = `800 ${size}px ${FONT}`;
+  const w = ctx.measureText(text).width + size * 1.2, h = size * 1.75;
+  const x0 = align === 'center' ? x - w / 2 : x;
+  rr(x0, y - h / 2, w, h, h / 2); ctx.fillStyle = bg; ctx.fill();
+  ctx.fillStyle = fg; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(text, x0 + w / 2, y + 1);
+}
+function caption(text, x, y, size = 19) {
+  ctx.font = `600 ${size}px ${FONT}`;
+  ctx.fillStyle = '#4a5466'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillText(text, x, y);
+}
+
+/* =========================================================
+   Panel helpers
+   ========================================================= */
+const shown = new Map();
+function setText(el, t) { if (shown.get(el) !== t) { shown.set(el, t); el.textContent = t; } }
+function setCls(el, cls) { if (el.className !== cls) el.className = cls; }
+
+/* =========================================================
+   Level 1: Any Road
+   ========================================================= */
+function draw1(s, now) {
+  const { n, c } = lineFromHandles(s.h[0], s.h[1]);
+  const cl = classify(s.pts, n, c);
+  const best = s.best, bu = best ? ease(clamp01((now - best.t0) / 700)) : 0;
+  drawMapBg();
+  ctx.save(); clipMap();
+  drawTint(n, c, cl.orient);
+  if (best) inLineFrame(best.n, best.c, () => {   // the empty gap around the best line
+    const hw = best.hw * bu;
+    ctx.globalAlpha = bu;
+    ctx.fillStyle = 'rgba(255,212,59,0.22)'; ctx.fillRect(-2500, -hw, 5000, 2 * hw);
+    ctx.strokeStyle = 'rgba(214,150,0,0.85)'; ctx.lineWidth = 2.5; ctx.setLineDash([10, 8]); hline(-hw); hline(hw); ctx.setLineDash([]);
+  });
+  if (s.others) for (const r of s.others) inLineFrame(r.n, r.c, () => {
+    ctx.strokeStyle = r.color; ctx.lineWidth = 5; ctx.setLineDash([18, 12]); hline(0); ctx.setLineDash([]);
+  });
+  if (best) inLineFrame(best.n, best.c, () => {
+    ctx.globalAlpha = bu;
+    ctx.strokeStyle = 'rgba(23,32,46,0.35)'; ctx.lineWidth = 11; hline(0);
+    ctx.strokeStyle = COL.gold; ctx.lineWidth = 7; hline(0);
+  });
+  drawThinRoad(n, c);
+  ctx.restore();
+  for (const p of s.pts) drawHouse(p, { wrong: cl.wrong.has(p) });
+  if (best) {
+    const seg = clipLine(best.n, best.c, 0, 0, W, H);
+    if (seg) {
+      const [a, b] = seg[0].y < seg[1].y ? seg : [seg[1], seg[0]];
+      ctx.save(); ctx.globalAlpha = bu;
+      pill('★ Best line', lerp(a.x, b.x, 0.17), lerp(a.y, b.y, 0.17), { bg: COL.gold, fg: COL.ink, size: 20 });
+      ctx.restore();
+    }
+  }
+  if (s.others) s.others.forEach((r, i) => {
+    const seg = clipLine(r.n, r.c, 30, 30, W - 30, H - 30); if (!seg) return;
+    const [a, b] = seg[0].y < seg[1].y ? seg : [seg[1], seg[0]];
+    const e = i % 2 ? b : a;
+    circle(e.x, e.y, 18); ctx.fillStyle = r.color; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.font = `800 20px ${FONT}`; ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(r.label, e.x, e.y + 1);
+  });
+  drawHandles(s.h, hover);
+
+  const k = cl.wrong.size;
+  setText($('s1'), k ? `✗ ${k} house${k > 1 ? 's are' : ' is'} on the wrong side` : '✓ The road splits the two villages!');
+  setCls($('s1'), 'status ' + (k ? 'bad' : 'good'));
+  setText($('others'), s.others ? 'Hide other roads' : 'Show other roads');
+  setText($('ask1hint'), best ? 'Click to hide' : 'Click to reveal');
+  $('ans1').classList.toggle('on', !!best);
+  if (best) {
+    let ans = '★ The best line leaves the biggest gap to the closest houses on both sides.';
+    if (s.others) {
+      const gap = s.others.map(r => Math.min(...s.pts.map(p => Math.abs(r.n.x * p.x + r.n.y * p.y - r.c))));
+      ans += ` Of roads A–E, road ${s.others[gap.indexOf(Math.max(...gap))].label} comes closest.`;
+    }
+    setText($('ans1'), ans);
+  }
+}
+
+/* =========================================================
+   Level 2: The Widest Road
+   ========================================================= */
+function draw2(s, now, dt) {
+  drawMapBg();
+  let width;
+  if (s.mode === 'user') {
+    const { n, c } = lineFromHandles(s.h[0], s.h[1]);
+    const cl = classify(s.pts, n, c);
+    const ok = cl.wrong.size === 0;
+    const hw = ok ? cl.minDist : 0;
+    width = 2 * hw;
+    ctx.save(); clipMap();
+    drawTint(n, c, cl.orient);
+    if (ok) drawRoad(n, c, hw); else drawThinRoad(n, c);
+    ctx.restore();
+    for (const p of s.pts) drawHouse(p, { wrong: cl.wrong.has(p) });
+    drawHandles(s.h, hover);
+    setText($('hint2'), ok ? 'Drag the white handles. Can you make the road wider?'
+                           : 'Some houses are on the wrong side, so there is no road. Move it!');
+  } else {
+    const tgt = roadTarget(s.svm.n, s.svm.c, s.svm.hw);
+    s.disp = approach(s.disp, tgt, 1 - Math.exp(-dt / s.tau));
+    if (!s.revealed && s.disp.settled) { s.revealed = true; s.tau = 0.07; }
+    const L = roadOf(s.disp);
+    const cl = classify(s.pts, L.n, L.c);
+    width = 2 * L.hw;
+    ctx.save(); clipMap();
+    drawTint(L.n, L.c, cl.orient);
+    drawRoad(L.n, L.c, L.hw);
+    ctx.restore();
+    const crossed = s.pts.some(p => s.svm.f(p) * p.c < 0);
+    for (const p of s.pts) {
+      const yf = s.svm.f(p) * p.c;
+      drawHouse(p, { glow: s.revealed && Math.abs(yf - 1) < 0.03, wrong: yf < 0 });
+    }
+    setText($('hint2'), !s.revealed ? 'SVM is building the widest road…'
+      : crossed ? 'Houses crossed over: no clean road exists!'
+      : 'Drag a far-away house: nothing changes. Now drag a glowing one!');
+  }
+  setText($('w2'), fmt(width));
+  const scale = 2 * s.svm.hw * 1.1 || 1;
+  $('bar2').firstElementChild.style.width = clamp(width / scale * 100, 0, 100).toFixed(1) + '%';
+  setCls($('bar2'), s.mode === 'svm' ? 'bar svm' : 'bar');
+  setText($('sub2'), s.mode === 'svm' && s.revealed
+    ? `Your best: ${fmt(s.best)}  ·  SVM: ${fmt(2 * s.svm.hw)}`
+    : `Your best: ${fmt(s.best)}`);
+  setText($('svm2'), s.mode === 'svm' ? '↺ My turn' : '✨ Let SVM Try');
+}
+
+/* =========================================================
+   Level 3: The Troublemaker
+   ========================================================= */
+function draw3(s, now, dt) {
+  const tgt = roadTarget(s.svm.n, s.svm.c, s.svm.hw);
+  s.disp = approach(s.disp, tgt, 1 - Math.exp(-dt / 0.09));
+  const L = roadOf(s.disp);
+  const cl = classify(s.pts, L.n, L.c);
+  drawMapBg();
+  ctx.save(); clipMap();
+  drawTint(L.n, L.c, cl.orient);
+  drawRoad(L.n, L.c, L.hw);
+  ctx.restore();
+  const tm = s.pts.find(p => p.tm);
+  for (const p of s.pts) if (!p.tm) drawHouse(p, { wrong: s.svm.f(p) * p.c < 0 });
+  drawHouse(tm, { wrong: s.svm.f(tm) * tm.c < 0 });
+  pill('troublemaker', tm.x, tm.y - 38, { size: 17 });
+
+  setText($('w3'), fmt(2 * L.hw));
+  const C = s.C;
+  setText($('cval'), `C = ${C < 1 ? C.toFixed(2) : C < 10 ? C.toFixed(1) : C.toFixed(0)}`);
+  const yf = s.svm.f(tm) * tm.c;
+  const el = $('tm3');
+  if (yf >= 0.98) { setText(el, 'Fits ✓ The road squeezes past it'); setCls(el, 'mid good'); }
+  else if (yf >= 0) { setText(el, 'Sitting on the road ⚠'); setCls(el, 'mid warn'); }
+  else { setText(el, 'Ignored (it is on the wrong side)'); setCls(el, 'mid'); }
+}
+
+/* =========================================================
+   Level 4: The Impossible Level (kernel trick)
+   ========================================================= */
+const TILT = 38 * Math.PI / 180;
+
+function view3(s, now, dt) {
+  let V;
+  if (s.phase === 'lifting') {
+    const u = clamp01((now - s.t0) / 3000);
+    const e1 = ease(clamp01(u / 0.45)), e2 = ease(clamp01((u - 0.3) / 0.55)), e3 = ease(clamp01((u - 0.82) / 0.18));
+    V = { tilt: e1, lift: e2, plane: e3, circle: e3, az: -0.5 * e1 };
+    if (u >= 1) { s.phase = 'lifted'; s.az = -0.5; }
+  } else if (s.phase === 'lifted') {
+    if (s.autoRot && !drag) s.az += dt * 0.18;
+    V = { tilt: 1, lift: 1, plane: 1, circle: 1, az: s.az };
+  } else {   // dropping
+    const u = clamp01((now - s.t0) / 2400), e = ease(u);
+    V = { tilt: 1 - e, lift: 1 - e, plane: 1 - ease(clamp01(u / 0.35)), circle: 1, az: s.azFrom * (1 - e) };
+    if (u >= 1) { s.phase = 'ring'; s.t0 = now; }
+  }
+  V.phi = lerp(Math.PI / 2, TILT, V.tilt);
+  V.zoom = lerp(1, 0.86, V.tilt);
+  V.cy = lerp(CY, CY + 62, V.tilt);
+  return V;
+}
+
+function draw3D(s, V) {
+  const ca = Math.cos(V.az), sa = Math.sin(V.az), sp = Math.sin(V.phi), cp = Math.cos(V.phi);
+  const proj = (x, y, z) => {
+    const X = x - CX, Y = y - CY;
+    const xr = X * ca - Y * sa, yr = X * sa + Y * ca;
+    return { x: CX + xr * V.zoom, y: V.cy + (yr * sp - z * cp) * V.zoom, d: yr * cp + z * sp };
+  };
+  const poly = pts => { ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.closePath(); };
+  const seg = (a, b) => { ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); };
+
+  // flat map fades out, ground tile fades in
+  if (V.tilt < 0.99) drawMapBg(1 - V.tilt);
+  const G = 300;
+  ctx.save();
+  ctx.globalAlpha = V.tilt;
+  poly([[-G, -G], [G, -G], [G, G], [-G, G]].map(([a, b]) => proj(CX + a, CY + b, 0)));
+  ctx.fillStyle = COL.map; ctx.fill();
+  ctx.strokeStyle = COL.mapEdge; ctx.lineWidth = 2; ctx.stroke();
+  ctx.strokeStyle = 'rgba(23,32,46,0.08)'; ctx.lineWidth = 1.5;
+  for (let t = -G + 60; t < G; t += 60) {
+    seg(proj(CX + t, CY - G, 0), proj(CX + t, CY + G, 0));
+    seg(proj(CX - G, CY + t, 0), proj(CX + G, CY + t, 0));
+  }
+  ctx.restore();
+
+  // houses: height = distance from the centre
+  const zc = s.rCut * V.lift;
+  const items = s.pts.map(p => {
+    const z = Math.hypot(p.x - CX, p.y - CY) * V.lift;
+    return { p, z, base: proj(p.x, p.y, 0), top: proj(p.x, p.y, z) };
+  });
+  const below = items.filter(i => i.z <= zc).sort((a, b) => a.top.d - b.top.d);
+  const above = items.filter(i => i.z > zc).sort((a, b) => a.top.d - b.top.d);
+  const stemCol = c => c === RED ? 'rgba(224,49,49,0.5)' : 'rgba(28,98,214,0.5)';
+
+  ctx.lineWidth = 3;
+  for (const i of items) { ctx.strokeStyle = stemCol(i.p.c); seg(i.base, proj(i.p.x, i.p.y, Math.min(i.z, zc))); }
+  for (const i of below) drawHouse({ x: i.top.x, y: i.top.y, c: i.p.c });
+
+  // the flat cut + where it meets the cone (a circle)
+  if (V.plane > 0.001) {
+    poly([[-G, -G], [G, -G], [G, G], [-G, G]].map(([a, b]) => proj(CX + a, CY + b, zc)));
+    ctx.fillStyle = `rgba(255,212,59,${0.32 * V.plane})`; ctx.fill();
+    ctx.strokeStyle = `rgba(214,150,0,${0.9 * V.plane})`; ctx.lineWidth = 2.5; ctx.stroke();
+  }
+  if (V.circle > 0.001) {
+    ctx.beginPath();
+    for (let k = 0; k <= 96; k++) {
+      const a = k / 96 * Math.PI * 2, q = proj(CX + s.rCut * Math.cos(a), CY + s.rCut * Math.sin(a), zc);
+      k ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y);
+    }
+    ctx.strokeStyle = `rgba(214,150,0,${V.circle})`; ctx.lineWidth = 5; ctx.stroke();
+  }
+
+  ctx.lineWidth = 3;
+  for (const i of above) { ctx.strokeStyle = stemCol(i.p.c); seg(proj(i.p.x, i.p.y, zc), i.top); }
+  for (const i of above) drawHouse({ x: i.top.x, y: i.top.y, c: i.p.c });
+
+  if (V.tilt > 0.4) {
+    ctx.save(); ctx.globalAlpha = clamp01((V.tilt - 0.4) / 0.4);
+    pill('✨ Kernel Trick', 26, 38, { bg: COL.gold, fg: COL.ink, size: 22, align: 'left' });
+    caption('height = distance from the center', 30, 82);
+    if (s.phase === 'lifted') caption('drag to spin', 30, 112, 16);
+    ctx.restore();
+  }
+}
+
+function drawRing(s, now) {
+  const a = ease(clamp01((now - s.t0) / 700));
+  drawMapBg();
+  ctx.save(); clipMap();
+  ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.arc(CX, CY, s.rCut, 0, Math.PI * 2, true);
+  ctx.fillStyle = COL.tint[BLUE]; ctx.fill();
+  circle(CX, CY, s.rCut); ctx.fillStyle = COL.tint[RED]; ctx.fill();
+  ctx.globalAlpha = a;
+  ctx.beginPath(); ctx.arc(CX, CY, s.rOut, 0, Math.PI * 2); ctx.arc(CX, CY, s.rIn, 0, Math.PI * 2, true);
+  ctx.fillStyle = COL.asphalt; ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.95)'; ctx.lineWidth = 4;
+  circle(CX, CY, s.rIn); ctx.stroke();
+  circle(CX, CY, s.rOut); ctx.stroke();
+  ctx.globalAlpha = 1;
+  circle(CX, CY, s.rCut);
+  ctx.strokeStyle = a < 1 ? 'rgba(214,150,0,1)' : COL.center; ctx.lineWidth = 5;
+  ctx.setLineDash(a < 1 ? [] : [28, 20]); ctx.stroke(); ctx.setLineDash([]);
+  ctx.restore();
+  for (const p of s.pts) {
+    const r = Math.hypot(p.x - CX, p.y - CY);
+    const touching = p.c === RED ? r > s.rIn - 0.5 : r < s.rOut + 0.5;
+    drawHouse(p, { glow: a >= 1 && touching });
+  }
+  pill('✨ Kernel Trick', 26, 38, { bg: COL.gold, fg: COL.ink, size: 22, align: 'left' });
+  caption('the flat cut becomes a circle on the map', 30, 82);
+}
+
+function draw4(s, now, dt) {
+  const btn = $('lift'), st = $('s4');
+  if (s.phase === 'flat') {
+    const { n, c } = lineFromHandles(s.h[0], s.h[1]);
+    const cl = classify(s.pts, n, c);
+    drawMapBg();
+    ctx.save(); clipMap(); drawTint(n, c, cl.orient); drawThinRoad(n, c); ctx.restore();
+    for (const p of s.pts) drawHouse(p, { wrong: cl.wrong.has(p) });
+    drawHandles(s.h, hover);
+    setText(st, `✗ ${cl.wrong.size} houses on the wrong side. No straight road works!`);
+    setCls(st, 'status bad');
+  } else if (s.phase === 'ring') {
+    drawRing(s, now);
+    setText(st, '✓ Back on the map, the flat cut is a circle: a ring road!');
+    setCls(st, 'status good');
+  } else {
+    draw3D(s, view3(s, now, dt));
+    if (s.phase === 'ring') return;   // just finished dropping; draw the ring next frame
+    setText(st, { lifting: 'Lifting: the farther a house is from the center, the higher it goes…',
+                  lifted: '✓ Red houses stay low, blue houses rise high: a flat sheet now splits them!',
+                  dropping: 'Bringing the houses back down…' }[s.phase]);
+    setCls(st, 'status ' + (s.phase === 'lifted' ? 'good' : ''));
+  }
+  setText(btn, { flat: '⬆ Lift to 3D', lifting: '⬆ Lifting…', lifted: '⬇ Back to the map', dropping: '⬇ Landing…', ring: '↺ Replay' }[s.phase]);
+  btn.disabled = s.phase === 'lifting' || s.phase === 'dropping';
+}
+
+/* =========================================================
+   Intro: will a student PASS or FAIL? (5 screens)
+   ========================================================= */
+const PASS_COL = '#2f9e44', FAIL_COL = COL.red;
+const EMOJI_FONT = '"Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif';
+const INTRO_TITLES = { 1: 'Can a Computer Decide?', 2: 'Students as Dots', 3: 'What is SVM?',
+                       4: 'The Math: A Line That Decides', 5: 'The Math: The Widest Road' };
+
+// One example all the way through: hours studied (x₁), classes attended (x₂), passed?
+const GRAPH = { x0: 150, x1: 650, y0: 40, y1: 540 };          // 0–10 on both axes, 50 map units per step
+const STUDENTS = [
+  ['Riya', 6, 8, true], ['Aditya', 5, 7, true], ['Meera', 7, 5, true], ['Arjun', 8, 9, true], ['Priya', 7, 7, true],
+  ['Kabir', 9, 6, true], ['Ananya', 5, 9, true], ['Rohan', 9, 4, true], ['Vikram', 9, 9, true], ['Isha', 10, 7, true],
+  ['Aarav', 4, 4, false], ['Sara', 2, 3, false], ['Dev', 3, 4, false], ['Tara', 1, 6, false], ['Neel', 4, 2, false],
+  ['Zoya', 2, 1, false], ['Diya', 1, 3, false], ['Yash', 5, 1, false], ['Nisha', 2, 5, false], ['Kiran', 3, 2, false],
+].map(([name, h, c, pass]) => ({ name, h, c, pass, x: GRAPH.x0 + 50 * h, y: GRAPH.y1 - 50 * c }));
+const STUDENT_PTS = STUDENTS.map(s => ({ x: s.x, y: s.y, c: s.pass ? BLUE : RED }));
+const ISVM = svmTrain(STUDENT_PTS, HARD_C);                      // its normal points to the Pass side
+const isSV = s => Math.abs(ISVM.f(s) * (s.pass ? 1 : -1) - 1) < 0.03;
+const MANY_LINES = otherRoads(STUDENT_PTS).filter((_, i) => i !== 2);
+
+function freshIntro() {
+  return { t0: 0, hover: -1, pin: -1, sel: 0, w1: 2, w2: 1, b: -15, parts: 0 };   // sel 0 = Riya
+}
+let IS = freshIntro(), intro = 0;
+
+const fmtNum = v => (Number.isInteger(v) ? String(v) : v.toFixed(1));
+const signed = v => (v > 0 ? '+' : v < 0 ? '−' : '') + fmtNum(Math.abs(v));
+const score = (s, st) => s.w1 * st.h + s.w2 * st.c + s.b;
+
+/* ---------- shared drawing ---------- */
+function clipGraph() {
+  ctx.beginPath(); ctx.rect(GRAPH.x0, GRAPH.y0, GRAPH.x1 - GRAPH.x0, GRAPH.y1 - GRAPH.y0); ctx.clip();
+}
+
+function drawAxes() {
+  const { x0, x1, y0, y1 } = GRAPH;
+  ctx.save();
+  ctx.strokeStyle = COL.ink; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.beginPath(); ctx.moveTo(x0, y0 - 22); ctx.lineTo(x0, y1); ctx.lineTo(x1 + 26, y1); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x0 - 9, y0 - 10); ctx.lineTo(x0, y0 - 24); ctx.lineTo(x0 + 9, y0 - 10); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x1 + 14, y1 - 9); ctx.lineTo(x1 + 28, y1); ctx.lineTo(x1 + 14, y1 + 9); ctx.stroke();
+  ctx.font = `600 17px ${FONT}`; ctx.fillStyle = '#4a5466'; ctx.textBaseline = 'middle';
+  for (let v = 0; v <= 10; v += 2) {
+    ctx.textAlign = 'center'; ctx.fillText(String(v), x0 + v * 50, y1 + 18);
+    if (v) { ctx.textAlign = 'right'; ctx.fillText(String(v), x0 - 12, y1 - v * 50); }
+  }
+  ctx.font = `800 23px ${FONT}`; ctx.fillStyle = COL.ink; ctx.textAlign = 'center';
+  ctx.fillText('Hours Studied', (x0 + x1) / 2, y1 + 52);
+  ctx.save(); ctx.translate(x0 - 58, (y0 + y1) / 2); ctx.rotate(-Math.PI / 2); ctx.fillText('Classes Attended', 0, 0); ctx.restore();
+  ctx.restore();
+}
+
+function drawPassFailKey(x = 684, y = 40) {
+  rr(x, y, 180, 84, 14);
+  ctx.fillStyle = 'rgba(255,255,255,0.94)'; ctx.fill();
+  ctx.strokeStyle = COL.mapEdge; ctx.lineWidth = 2; ctx.stroke();
+  [['Pass', PASS_COL], ['Fail', FAIL_COL]].forEach(([txt, col], i) => {
+    circle(x + 30, y + 27 + i * 32, 10); ctx.fillStyle = col; ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.font = `700 20px ${FONT}`; ctx.fillStyle = COL.ink; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText(txt, x + 50, y + 28 + i * 32);
+  });
+  pill('label', x + 2, y - 2, { bg: COL.gold, fg: COL.ink, size: 15, align: 'left' });
+}
+
+function drawStudent(st, { r = HOUSE_R, glow = false, ring = null, wrong = false } = {}) {
+  const { x, y } = st;
+  if (glow) {
+    circle(x, y, HOUSE_R + 12 + 3 * Math.sin(performance.now() / 250));
+    ctx.fillStyle = 'rgba(255,196,0,0.35)'; ctx.fill();
+    ctx.save(); ctx.shadowColor = COL.gold; ctx.shadowBlur = 18;
+    circle(x, y, HOUSE_R + 5); ctx.strokeStyle = COL.gold; ctx.lineWidth = 5; ctx.stroke();
+    ctx.restore();
+  }
+  if (wrong) {
+    circle(x, y, HOUSE_R + 8);
+    ctx.setLineDash([5, 4]); ctx.strokeStyle = COL.ink; ctx.lineWidth = 3; ctx.stroke(); ctx.setLineDash([]);
+  }
+  if (ring) { circle(x, y, HOUSE_R + 7); ctx.strokeStyle = ring; ctx.lineWidth = 4; ctx.stroke(); }
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.22)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 2;
+  circle(x, y, r); ctx.fillStyle = st.pass ? PASS_COL : FAIL_COL; ctx.fill();
+  ctx.restore();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 3.5; ctx.stroke();
+}
+
+// SVM's road on the graph: shaded band, dashed edges, solid middle line.
+function drawGraphRoad(a, grow = 1) {
+  const { n, c, hw } = ISVM, w = hw * grow;
+  ctx.save(); clipGraph(); ctx.globalAlpha = a;
+  inLineFrame(n, c, () => {
+    ctx.fillStyle = 'rgba(47,158,68,0.10)'; ctx.fillRect(-3000, 0, 6000, 3000);
+    ctx.fillStyle = 'rgba(224,49,49,0.08)'; ctx.fillRect(-3000, -3000, 6000, 3000);
+    ctx.fillStyle = 'rgba(245,180,0,0.24)'; ctx.fillRect(-2500, -w, 5000, 2 * w);
+    ctx.strokeStyle = '#b07d00'; ctx.lineWidth = 3; ctx.setLineDash([12, 9]); hline(-w); hline(w); ctx.setLineDash([]);
+    ctx.strokeStyle = COL.ink; ctx.lineWidth = 5; hline(0);
+  });
+  ctx.restore();
+}
+
+function arrow(a, b) {
+  const ang = Math.atan2(b.y - a.y, b.x - a.x), len = 13;
+  ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+  for (const [p, s] of [[b, 1], [a, -1]]) {
+    ctx.beginPath();
+    ctx.moveTo(p.x - s * len * Math.cos(ang - 0.45), p.y - s * len * Math.sin(ang - 0.45));
+    ctx.lineTo(p.x, p.y);
+    ctx.lineTo(p.x - s * len * Math.cos(ang + 0.45), p.y - s * len * Math.sin(ang + 0.45));
+    ctx.stroke();
+  }
+}
+
+/* ---------- screen 1: Can a computer decide? ---------- */
+const CARDS = [
+  { title: 'Email', icon: '📧', q: 'Spam or Not Spam?', chips: [['Spam', FAIL_COL], ['Not Spam', PASS_COL]] },
+  { title: 'Photo', icon: '🖼️', q: 'Cat or Dog?', chips: [['🐱 Cat', '#7048e8'], ['🐶 Dog', '#1098ad']] },
+  { title: 'Student', icon: '🧑‍🎓', q: 'Pass or Fail?', chips: [['Pass', PASS_COL], ['Fail', FAIL_COL]], today: true },
+];
+
+function drawIntro1(s, now) {
+  const t = now - s.t0;
+  drawMapBg();
+  CARDS.forEach((card, i) => {
+    const u = ease(clamp01((t - 150 - i * 300) / 600));
+    if (u <= 0) return;
+    const cx = 190 + i * 310, cy = 320 + (1 - u) * 40;
+    ctx.save();
+    ctx.globalAlpha = u;
+    ctx.save();
+    ctx.shadowColor = 'rgba(23,32,46,0.16)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 6;
+    rr(cx - 135, cy - 200, 270, 400, 22); ctx.fillStyle = '#fff'; ctx.fill();
+    ctx.restore();
+    if (card.today) { ctx.strokeStyle = COL.gold; ctx.lineWidth = 5; ctx.stroke(); }
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = `800 26px ${FONT}`; ctx.fillStyle = COL.ink; ctx.fillText(card.title, cx, cy - 152);
+    ctx.font = `96px ${EMOJI_FONT}`; ctx.fillText(card.icon, cx, cy - 58);
+    ctx.font = `800 34px ${FONT}`; ctx.fillStyle = '#9aa1ad'; ctx.fillText('↓', cx, cy + 30);
+    ctx.font = `800 25px ${FONT}`; ctx.fillStyle = COL.ink; ctx.fillText(card.q, cx, cy + 82);
+    ctx.font = `800 18px ${FONT}`;
+    const widths = card.chips.map(([txt]) => ctx.measureText(txt).width + 18 * 1.2);
+    let x = cx - (widths[0] + widths[1] + 12) / 2;
+    card.chips.forEach(([txt, col], k) => {
+      pill(txt, x + widths[k] / 2, cy + 142, { bg: col, size: 18 });
+      x += widths[k] + 12;
+    });
+    if (card.today) pill("Today's example", cx, cy - 200, { bg: COL.gold, fg: COL.ink, size: 17 });
+    ctx.restore();
+  });
+}
+
+/* ---------- screen 2: students as dots ---------- */
+function drawIntro2(s, now) {
+  const t = now - s.t0;
+  drawMapBg();
+  drawAxes();
+  drawPassFailKey();
+  caption('Hover over a dot', 686, 160, 18);
+  caption('to meet the student', 686, 186, 18);
+  STUDENTS.forEach((st, i) => {
+    const u = clamp01((t - 250 - i * 70) / 320);
+    if (u <= 0) return;
+    const pop = u < 1 ? Math.sin(u * Math.PI / 2) + 0.25 * Math.sin(u * Math.PI) : 1;
+    drawStudent(st, { r: HOUSE_R * pop, ring: s.hover === i || s.pin === i ? COL.ink : null });
+  });
+  const k = s.pin >= 0 ? s.pin : s.hover;
+  if (k >= 0) {
+    const st = STUDENTS[k], text = `${st.name}: ${st.h} hrs, ${st.c} classes → ${st.pass ? 'Pass' : 'Fail'}`;
+    ctx.font = `800 19px ${FONT}`;
+    const w = ctx.measureText(text).width + 19 * 1.2;
+    pill(text, clamp(st.x, w / 2 + 8, W - w / 2 - 8), st.y < 80 ? st.y + 42 : st.y - 42, { bg: st.pass ? PASS_COL : FAIL_COL, size: 19 });
+  }
+}
+
+/* ---------- screen 3: what is SVM? ---------- */
+function drawIntro3(s, now) {
+  const t = now - s.t0;
+  const START = 300, GAP = 450, DRAW = 500;
+  const fadeAt = START + (MANY_LINES.length - 1) * GAP + DRAW + 700;
+  const fade = clamp01((t - fadeAt) / 600), road = ease(clamp01((t - fadeAt - 200) / 800));
+  drawMapBg();
+  if (road > 0) drawGraphRoad(road, road);
+  ctx.save(); clipGraph();
+  MANY_LINES.forEach((r, i) => {
+    const p = ease(clamp01((t - START - i * GAP) / DRAW));
+    const seg = clipLine(r.n, r.c, GRAPH.x0, GRAPH.y0, GRAPH.x1, GRAPH.y1);
+    if (p <= 0 || fade >= 1 || !seg) return;
+    ctx.globalAlpha = 1 - fade;
+    ctx.strokeStyle = r.color; ctx.lineWidth = 5; ctx.setLineDash([16, 10]);
+    ctx.beginPath(); ctx.moveTo(seg[0].x, seg[0].y); ctx.lineTo(lerp(seg[0].x, seg[1].x, p), lerp(seg[0].y, seg[1].y, p)); ctx.stroke();
+    ctx.setLineDash([]);
+  });
+  ctx.restore();
+  drawAxes();
+  drawPassFailKey();
+  STUDENTS.forEach(st => drawStudent(st, { glow: road >= 1 && s.parts >= 1 && isSV(st) }));
+  if (s.parts >= 2) {   // "Vector": one student is just a list of numbers
+    const riya = STUDENTS[0];
+    ctx.strokeStyle = COL.ink; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(riya.x + 16, riya.y + 2); ctx.lineTo(684, 165); ctx.stroke();
+    pill('Riya = [6, 8]', 686, 165, { size: 21, align: 'left' });
+    caption('[hours, classes]', 690, 202, 17);
+  }
+  document.querySelectorAll('.part').forEach((el, i) => el.classList.toggle('on', s.parts > i));
+  $('revealBtn').hidden = s.parts >= 3;
+  setText($('revealBtn'), `Reveal: ${['Support', 'Vector', 'Machine'][Math.min(s.parts, 2)]}`);
+}
+
+/* ---------- screen 4: a line that decides ---------- */
+function lineFromWeights(w1, w2, b) {   // w₁·hours + w₂·classes + b = 0, in map units
+  const N = Math.hypot(w1, w2);
+  if (N < 1e-9) return null;
+  return { n: { x: w1 / N, y: -w2 / N }, c: 50 * (3 * w1 - 10.8 * w2 - b) / N };
+}
+
+function drawIntro4(s, now) {
+  const L = lineFromWeights(s.w1, s.w2, s.b);
+  drawMapBg();
+  if (L) {
+    ctx.save(); clipGraph();
+    inLineFrame(L.n, L.c, () => {
+      ctx.fillStyle = 'rgba(47,158,68,0.12)'; ctx.fillRect(-3000, 0, 6000, 3000);
+      ctx.fillStyle = 'rgba(224,49,49,0.09)'; ctx.fillRect(-3000, -3000, 6000, 3000);
+      ctx.strokeStyle = COL.ink; ctx.lineWidth = 5; hline(0);
+    });
+    ctx.restore();
+  }
+  drawAxes();
+  drawPassFailKey();
+  let wrongN = 0;
+  STUDENTS.forEach((st, i) => {
+    const r = score(s, st), wrong = st.pass ? r <= 0 : r >= 0;
+    if (wrong) wrongN++;
+    drawStudent(st, { wrong, ring: i === s.sel ? COL.gold : i === s.hover ? COL.ink : null });
+  });
+
+  const X = 684, minus = s.b < 0 ? '−' : '+';
+  caption('Your line:', X, 154, 17);
+  ctx.font = `800 24px ${FONT}`; ctx.fillStyle = COL.ink; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillText(`${fmtNum(s.w1)}x₁ + ${fmtNum(s.w2)}x₂ ${minus} ${fmtNum(Math.abs(s.b))} = 0`, X, 186);
+
+  rr(X, 214, 300, 214, 16);
+  ctx.fillStyle = 'rgba(255,255,255,0.95)'; ctx.fill();
+  ctx.strokeStyle = COL.mapEdge; ctx.lineWidth = 2; ctx.stroke();
+  if (s.sel >= 0) {
+    const st = STUDENTS[s.sel], r = score(s, st);
+    const col = r > 0 ? PASS_COL : r < 0 ? FAIL_COL : COL.ink;
+    const right = st.pass ? r > 0 : r < 0;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.font = `700 18px ${FONT}`; ctx.fillStyle = '#4a5466';
+    ctx.fillText(`${st.name}: ${st.h} hrs, ${st.c} classes`, X + 16, 242);
+    ctx.font = `800 22px ${FONT}`; ctx.fillStyle = COL.ink;
+    ctx.fillText(`${fmtNum(s.w1)}(${st.h}) + ${fmtNum(s.w2)}(${st.c}) ${minus} ${fmtNum(Math.abs(s.b))}`, X + 16, 280);
+    ctx.font = `800 30px ${FONT}`; ctx.fillStyle = col;
+    ctx.fillText(`= ${signed(r)}`, X + 16, 320);
+    ctx.font = `800 21px ${FONT}`;
+    ctx.fillText(r > 0 ? '→ positive → PASS' : r < 0 ? '→ negative → FAIL' : '→ zero: on the line', X + 16, 358);
+    ctx.font = `700 17px ${FONT}`; ctx.fillStyle = right ? PASS_COL : FAIL_COL;
+    ctx.fillText(right ? '✓ Correct' : `✗ Wrong: really ${st.pass ? 'Pass' : 'Fail'}`, X + 16, 396);
+  } else {
+    caption('Click any dot to see', X + 16, 300, 18);
+    caption('its calculation', X + 16, 326, 18);
+  }
+  if (!L) pill('w₁ and w₂ can\'t both be 0', X, 462, { bg: COL.ink, size: 17, align: 'left' });
+  else pill(wrongN ? `✗ ${wrongN} on the wrong side` : '✓ Every student on the right side', X, 462,
+            { bg: wrongN ? '#c92a2a' : PASS_COL, size: 17, align: 'left' });
+
+  setText($('w1v'), fmtNum(s.w1));
+  setText($('w2v'), fmtNum(s.w2));
+  setText($('bv'), fmtNum(s.b));
+}
+
+/* ---------- screen 5: the widest road ---------- */
+function drawIntro5(s, now) {
+  const t = now - s.t0;
+  const a = ease(clamp01((t - 150) / 700)), labels = clamp01((t - 700) / 500);
+  drawMapBg();
+  drawGraphRoad(a);
+  drawAxes();
+  drawPassFailKey();
+  STUDENTS.forEach(st => drawStudent(st, { glow: a >= 1 && isSV(st) }));
+  if (labels <= 0) return;
+
+  const { n, c, hw } = ISVM;
+  const at = (k, y) => ({ x: (k - n.y * y) / n.x, y });           // the point on line n·p = k at height y
+  let ang = Math.atan2(-n.x, n.y);                                  // direction along the road, kept readable
+  if (ang > Math.PI / 2) ang -= Math.PI; else if (ang < -Math.PI / 2) ang += Math.PI;
+  const label = (text, p, bg) => {
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(ang); pill(text, 0, 0, { bg, size: 18 }); ctx.restore();
+  };
+  ctx.save();
+  ctx.globalAlpha = labels;
+  label('w·x + b = +1', at(c + hw, 90), '#b07d00');
+  label('w·x + b = 0', at(c, 118), COL.ink);
+  label('w·x + b = −1', at(c - hw, 480), '#b07d00');
+  // the margin: from a Fail support vector straight across to the Pass edge
+  const sv = STUDENTS.find(st => !st.pass && isSV(st));
+  ctx.strokeStyle = COL.ink; ctx.lineWidth = 3.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  arrow({ x: sv.x + n.x * 20, y: sv.y + n.y * 20 }, { x: sv.x + n.x * 2 * hw, y: sv.y + n.y * 2 * hw });
+  const d = { x: Math.cos(ang), y: Math.sin(ang) };
+  ctx.save();
+  ctx.translate(sv.x + n.x * hw + d.x * 50, sv.y + n.y * hw + d.y * 50); ctx.rotate(ang);
+  pill('margin', 0, 0, { bg: COL.gold, fg: COL.ink, size: 18 });
+  ctx.restore();
+  ctx.restore();
+}
+
+const INTRO_DRAW = { 1: drawIntro1, 2: drawIntro2, 3: drawIntro3, 4: drawIntro4, 5: drawIntro5 };
+
+/* ---------- intro pointer handling: hover (screen 2) and click (screens 2, 4) ---------- */
+function nearestStudent(p) {
+  let k = -1, best = 24;
+  STUDENTS.forEach((st, i) => { const d = Math.hypot(st.x - p.x, st.y - p.y); if (d < best) { best = d; k = i; } });
+  return k;
+}
+function introDown(e) {
+  const k = nearestStudent(toWorld(e));
+  if (intro === 2) IS.pin = k === IS.pin ? -1 : k;
+  if (intro === 4 && k >= 0) IS.sel = k;
+}
+function introMove(e) {
+  const k = intro === 2 || intro === 4 ? nearestStudent(toWorld(e)) : -1;
+  IS.hover = k;
+  canvas.style.cursor = k >= 0 ? 'pointer' : 'default';
+}
+
+/* =========================================================
+   "Explain more" notes for every screen
+   ========================================================= */
+const EXPLAIN = {
+  1: { title: 'Level 1: Any road', points: [
+    `The two villages are two groups of data points. A straight road between them is a dividing line.`,
+    `Lots of roads keep every house on its own side, so on these houses they all "work".`,
+    `But a road that passes very close to some houses is risky: a new house built nearby could easily end up on the wrong side.`,
+    `The safest road stays as far as possible from the houses on <b>both</b> sides. Click <b>Which line is the best?</b> to see it.`,
+  ] },
+  2: { title: 'Level 2: The widest road', points: [
+    `<b>Road center = decision boundary</b>: the line that decides red or blue.`,
+    `<b>Road width = margin</b>: the empty space between the villages. SVM makes it as wide as possible.`,
+    `<b>Glowing houses = support vectors</b>: the houses touching the road edges. Only they decide where the road goes, so moving a far-away house changes nothing.`,
+    `Why 2 or 3 glowing houses? A straight road needs its tilt, its position and its width fixed. Two houses on one edge lock the tilt, and one house on the other edge locks the width.`,
+    `Finding it by hand: wrap each village in a rubber band, find the two closest points of the two bands, and draw the line that cuts that gap in half at a right angle.`,
+  ], math: `Give red houses y = −1 and blue houses y = +1. A line is <code>w·x + b = 0</code>, and the road width is <code>2 / ‖w‖</code>.<br>
+    SVM makes <code>‖w‖</code> as small as possible while every house stays off the road: <code>y·(w·x + b) ≥ 1</code>.<br>
+    The answer uses only the support vectors: <code>w = Σ αᵢ yᵢ xᵢ</code>, with αᵢ = 0 for every other house.` },
+  3: { title: 'Level 3: The troublemaker', points: [
+    `Real data is messy. Sometimes one house sits in the wrong village, because of a mistake or because it is just unusual.`,
+    `<b>C (strictness)</b> tells SVM how much every single house matters.`,
+    `<b>Low C (relaxed)</b>: a few houses may sit on the road or on the wrong side, and the road stays wide. This usually works better for new houses.`,
+    `<b>High C (strict)</b>: the road squeezes around every house, even the troublemaker. It becomes narrow and tilted: perfect for this map, but often wrong for new houses. This is called <b>overfitting</b>.`,
+    `Picking C is a balance: not too relaxed, not too strict.`,
+  ], math: `Each house gets a "rule-breaking" amount ξᵢ ≥ 0. SVM now minimizes <code>½‖w‖² + C·Σξᵢ</code> while <code>y·(w·x + b) ≥ 1 − ξᵢ</code>.<br>
+    Big C makes breaking the rules expensive (narrow road). Small C makes it cheap (wide road).` },
+  4: { title: 'Level 4: The impossible level', points: [
+    `Here the blue village surrounds the red one, so no straight road can split them.`,
+    `The trick: give every house a new measurement, its <b>height = distance from the center</b>. Red houses are near the center, so they stay low. Blue houses are far away, so they rise high.`,
+    `In 3D, a flat sheet now separates the low houses from the high ones.`,
+    `Back on the map, the place where the sheet cuts becomes a <b>circle</b>: a curved boundary, the ring road.`,
+    `This is the <b>kernel trick</b>: look at the data in a new way, so straight-line math can make curved boundaries.`,
+  ], math: `SVM only needs the dot products <code>x·x′</code> between houses. The kernel trick swaps them for a kernel <code>K(x, x′)</code>, which acts like a dot product in the new space without ever building that space.<br>
+    A popular choice is the RBF kernel: <code>K(x, x′) = exp(−γ‖x − x′‖²)</code>.` },
+};
+
+function openExplain(on) {
+  const e = EXPLAIN[STEPS[step]];
+  if (on && !e) return;
+  if (on) {
+    $('exTitle').textContent = e.title;
+    $('exList').innerHTML = e.points.map(p => `<li>${p}</li>`).join('');
+    $('exMath').innerHTML = e.math ? `<b>For the curious: the math</b>${e.math}` : '';
+    $('exMath').hidden = !e.math;
+  }
+  $('explainBox').hidden = !on;
+  $('explainBtn').textContent = on ? '✕ Close notes' : '📖 Explain more';
+}
+
+/* =========================================================
+   Quick quiz: 5 questions in 2 minutes
+   ========================================================= */
+const QUIZ = [
+  { q: 'In our student example, what are the features?',
+    opts: ['Pass or Fail', 'Hours studied and classes attended', "The students' names", 'The colour of the dots'], a: 1,
+    why: 'Features are what we measure. Pass or Fail is the label.' },
+  { q: 'Which line does SVM choose?',
+    opts: ['Any line that separates the groups', 'The line closest to the points', 'The line with the widest gap (margin)', 'A line through the middle of the graph'], a: 2,
+    why: 'SVM builds the widest road: the biggest margin between the two groups.' },
+  { q: 'What are support vectors?',
+    opts: ['The points touching the edges of the road', 'All the points in the data', 'The points farthest from the road', 'The points on the wrong side'], a: 0,
+    why: 'Only the points touching the road edges decide where the road goes.' },
+  { q: 'What happens to the road when C is very high (very strict)?',
+    opts: ['It gets wider', 'It becomes a circle', 'It gets narrow, to fit every single point', 'It disappears'], a: 2,
+    why: 'A strict SVM squeezes past every point, even the troublemaker. That can be overfitting.' },
+  { q: 'No straight line can separate the groups. What does SVM use?',
+    opts: ['A higher C', 'Fewer points', 'A wider road', 'The kernel trick'], a: 3,
+    why: 'The kernel trick adds a new feature, so a flat cut in 3D becomes a curve on the map.' },
+];
+const QUIZ_SECONDS = 120;
+const QZ = { i: 0, picks: [], t0: 0, tEnd: 0 };   // current question, answers given, timer start/end
+let quiz = false;
+
+function renderQuiz() {
+  const done = QZ.i >= QUIZ.length;
+  const right = QUIZ.filter((q, k) => QZ.picks[k] === q.a).length;
+  $('qNum').textContent = done ? 'Your score' : `Question ${QZ.i + 1} of ${QUIZ.length}`;
+  if (done) {
+    $('qText').textContent = `You got ${right} out of ${QUIZ.length}!`;
+    $('qOpts').className = 'review';
+    $('qOpts').innerHTML = QUIZ.map((q, k) => {
+      const ok = QZ.picks[k] === q.a;
+      return `<div><b class="${ok ? 'good' : 'bad'}">${ok ? '✓' : '✗'}</b><span>${q.q}<small>${q.opts[q.a]}</small></span></div>`;
+    }).join('');
+    $('qWhy').textContent = right === QUIZ.length ? 'Perfect! You are SVM experts. 🎉'
+      : right >= 3 ? 'Great job! You know how to build the widest road.' : 'Good try! Remember: SVM builds the widest road.';
+    $('qNext').textContent = '↺ Try again';
+    $('qNext').hidden = false;
+  } else {
+    const Q = QUIZ[QZ.i], pick = QZ.picks[QZ.i], answered = pick != null;
+    $('qText').textContent = Q.q;
+    $('qOpts').className = 'opts';
+    $('qOpts').innerHTML = Q.opts.map((o, k) => {
+      const cls = answered && k === Q.a ? ' right' : answered && k === pick ? ' wrong' : '';
+      return `<button class="opt${cls}" data-k="${k}"${answered ? ' disabled' : ''}><i>${'ABCD'[k]}</i>${o}</button>`;
+    }).join('');
+    $('qWhy').innerHTML = !answered ? ''
+      : `<b class="${pick === Q.a ? 'good' : 'bad'}">${pick === Q.a ? '✓ Correct!' : '✗ Not quite.'}</b> ${Q.why}`;
+    $('qNext').textContent = QZ.i === QUIZ.length - 1 ? 'See my score →' : 'Next question →';
+    $('qNext').hidden = !answered;
+  }
+  $('qScore').textContent = `${right} / ${QUIZ.length}`;
+  $('qDots').innerHTML = QUIZ.map((q, k) =>
+    `<i class="${QZ.picks[k] == null ? (k === QZ.i ? 'now' : '') : QZ.picks[k] === q.a ? 'ok' : 'no'}"></i>`).join('');
+  $('next').textContent = done ? 'Start Over ↺' : 'Next →';
+  $('next').disabled = !done && QZ.picks[QZ.i] == null;
+}
+function quizAnswer(k) {
+  if (QZ.i < QUIZ.length && QZ.picks[QZ.i] == null) { QZ.picks[QZ.i] = k; renderQuiz(); }
+}
+function quizNext() {
+  if (QZ.i >= QUIZ.length) Object.assign(QZ, { i: 0, picks: [], t0: performance.now(), tEnd: 0 });   // try again
+  else if (QZ.picks[QZ.i] != null && ++QZ.i >= QUIZ.length) QZ.tEnd = performance.now();
+  renderQuiz();
+}
+function updateTimer(now) {
+  const left = Math.max(0, QUIZ_SECONDS - ((QZ.tEnd || now) - QZ.t0) / 1000), el = $('qTimer');
+  if (left <= 0) { setText(el, "Time's up!"); setCls(el, 'big bad'); return; }
+  const s = Math.ceil(left);
+  setText(el, `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`);
+  setCls(el, 'big' + (left <= 15 ? ' warn' : ''));
+}
+
+/* =========================================================
+   Main loop
+   ========================================================= */
+let last = performance.now();
+const DRAW = { 1: draw1, 2: draw2, 3: draw3, 4: draw4 };
+
+function render(now, dt) {
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (quiz) { updateTimer(now); return; }   // the quiz card covers the map
+  const k = view.s * view.dpr;
+  ctx.setTransform(k, 0, 0, k, view.offx * view.dpr, view.offy * view.dpr);
+  ctx.save();
+  if (intro) INTRO_DRAW[intro](IS, now, dt);
+  else DRAW[level](S[level], now, dt);
+  ctx.restore();
+}
+function frame(now) {
+  const dt = Math.min(0.05, Math.max(0, (now - last) / 1000)); last = now;
+  render(now, dt);
+  requestAnimationFrame(frame);
+}
+
+/* =========================================================
+   Interaction
+   ========================================================= */
+let drag = null, hover = null;
+
+function handlesActive(s) {
+  return level === 1 || (level === 2 && s.mode === 'user') || (level === 4 && s.phase === 'flat');
+}
+
+function hitTest(p) {
+  const s = S[level];
+  if (p.x < 0 || p.y < 0 || p.x > W || p.y > H) return null;
+  const hasHandles = handlesActive(s);
+  if (hasHandles) for (let i = 0; i < 2; i++) if (Math.hypot(s.h[i].x - p.x, s.h[i].y - p.y) <= 26) return { type: 'handle', i };
+  if (level === 2 || level === 3) {
+    let best = null, bd = 24;
+    for (const q of s.pts) { const d = Math.hypot(q.x - p.x, q.y - p.y); if (d < bd) { bd = d; best = q; } }
+    if (best) return { type: 'dot', pt: best };
+  }
+  if (hasHandles) {
+    const { n, c } = lineFromHandles(s.h[0], s.h[1]);
+    if (Math.abs(n.x * p.x + n.y * p.y - c) < 18) return { type: 'line' };
+  }
+  if (level === 4 && s.phase === 'lifted') return { type: 'rotate' };
+  return null;
+}
+
+function cursorFor(h) { return !h ? 'default' : h.type === 'line' ? 'move' : 'grab'; }
+
+function dotsChanged() {
+  const s = S[level];
+  if (level === 2) s.svm = svmTrain(s.pts, HARD_C);
+  if (level === 3) s.svm = svmTrain(s.pts, s.C);
+}
+
+function trackBest() {
+  const s = S[2];
+  if (level !== 2 || s.mode !== 'user') return;
+  const { n, c } = lineFromHandles(s.h[0], s.h[1]);
+  const cl = classify(s.pts, n, c);
+  if (cl.wrong.size === 0) s.best = Math.max(s.best, 2 * cl.minDist);
+}
+
+canvas.addEventListener('pointerdown', e => {
+  if (intro) return introDown(e);
+  const p = toWorld(e), hit = hitTest(p);
+  if (!hit) return;
+  drag = { ...hit, last: p };
+  if (hit.type === 'rotate') S[4].autoRot = false;
+  canvas.setPointerCapture(e.pointerId);
+  canvas.style.cursor = hit.type === 'line' ? 'move' : 'grabbing';
+  e.preventDefault();
+});
+
+canvas.addEventListener('pointermove', e => {
+  if (intro) return introMove(e);
+  const p = toWorld(e);
+  if (!drag) { hover = hitTest(p); canvas.style.cursor = cursorFor(hover); return; }
+  const s = S[level];
+  if (drag.type === 'handle') {
+    const q = clampPt(p, 22), other = s.h[1 - drag.i];
+    if (Math.hypot(q.x - other.x, q.y - other.y) > 40) s.h[drag.i] = q;
+    trackBest();
+  } else if (drag.type === 'line') {
+    const xs = s.h.map(h => h.x), ys = s.h.map(h => h.y);
+    const dx = clamp(p.x - drag.last.x, 22 - Math.min(...xs), W - 22 - Math.max(...xs));
+    const dy = clamp(p.y - drag.last.y, 22 - Math.min(...ys), H - 22 - Math.max(...ys));
+    s.h = s.h.map(h => ({ x: h.x + dx, y: h.y + dy }));
+    trackBest();
+  } else if (drag.type === 'dot') {
+    const q = clampPt(p, 18);
+    drag.pt.x = q.x; drag.pt.y = q.y;
+    dotsChanged();
+  } else if (drag.type === 'rotate') {
+    s.az += (p.x - drag.last.x) * 0.006;
+  }
+  drag.last = p;
+});
+
+function endDrag() { drag = null; canvas.style.cursor = cursorFor(hover); }
+canvas.addEventListener('pointerup', () => { if (!intro) endDrag(); });
+canvas.addEventListener('pointercancel', () => { if (!intro) endDrag(); });
+canvas.addEventListener('pointerleave', () => { if (!drag) hover = null; IS.hover = -1; });
+
+/* ---------- intro controls ---------- */
+$('revealBtn').addEventListener('click', () => { IS.parts = Math.min(3, IS.parts + 1); });
+document.querySelectorAll('.part').forEach(el => el.addEventListener('click', () => {
+  IS.parts = Math.max(IS.parts, +el.dataset.part + 1);
+}));
+$('replay3').addEventListener('click', () => { IS.t0 = performance.now(); });
+[['w1s', 'w1'], ['w2s', 'w2'], ['bs', 'b']].forEach(([id, k]) => $(id).addEventListener('input', e => { IS[k] = +e.target.value; }));
+$('startGame').addEventListener('click', () => goStep(5));
+
+/* ---------- buttons ---------- */
+$('ask1').addEventListener('click', () => {
+  const s = S[1];
+  if (s.best) { s.best = null; return; }
+  const m = svmTrain(s.pts, HARD_C);
+  s.best = { n: m.n, c: m.c, hw: m.hw, t0: performance.now() };
+});
+
+$('others').addEventListener('click', () => {
+  const s = S[1];
+  s.others = s.others ? null : otherRoads(s.pts);
+});
+
+$('svm2').addEventListener('click', () => {
+  const s = S[2];
+  if (s.mode === 'user') {
+    const { n, c } = lineFromHandles(s.h[0], s.h[1]);
+    const cl = classify(s.pts, n, c);
+    s.svm = svmTrain(s.pts, HARD_C);
+    s.disp = roadTarget(n, c, cl.wrong.size ? 0 : cl.minDist);
+    s.mode = 'svm'; s.revealed = false; s.tau = 0.22;
+  } else {
+    const L = roadOf(s.disp);
+    s.h = handlesFromLine(L.n, L.c);
+    s.mode = 'user'; s.revealed = false;
+  }
+});
+
+$('c3').addEventListener('input', e => {
+  const s = S[3];
+  s.slider = +e.target.value;
+  s.C = sliderToC(s.slider);
+  s.svm = svmTrain(s.pts, s.C);
+});
+
+$('lift').addEventListener('click', () => {
+  const s = S[4], now = performance.now();
+  if (s.phase === 'flat') { s.phase = 'lifting'; s.t0 = now; s.autoRot = true; }
+  else if (s.phase === 'lifted') {
+    let a = s.az % (Math.PI * 2);
+    if (a > Math.PI) a -= Math.PI * 2; else if (a < -Math.PI) a += Math.PI * 2;
+    s.azFrom = a; s.phase = 'dropping'; s.t0 = now;
+  } else if (s.phase === 'ring') S[4] = fresh(4);
+});
+
+document.querySelectorAll('[data-reset]').forEach(b => b.addEventListener('click', () => {
+  const n = +b.dataset.reset;
+  S[n] = fresh(n);
+  if (n === 3) $('c3').value = 0;
+}));
+
+/* ---------- navigation: intro 1–5, levels 1–4, then the quiz ---------- */
+const STEPS = ['i1', 'i2', 'i3', 'i4', 'i5', 1, 2, 3, 4, 'quiz'];
+let step = Math.max(0, STEPS.map(String).indexOf(location.hash.slice(1)));
+
+function syncSliders() { $('w1s').value = IS.w1; $('w2s').value = IS.w2; $('bs').value = IS.b; }
+
+function goStep(i) {
+  step = clamp(i, 0, STEPS.length - 1);
+  const id = STEPS[step];
+  quiz = id === 'quiz';
+  intro = typeof id === 'string' && !quiz ? +id.slice(1) : 0;
+  if (typeof id === 'number') level = id;
+  drag = null; hover = null;
+  Object.assign(IS, { t0: performance.now(), hover: -1, pin: -1 });
+  openExplain(false);
+  document.querySelectorAll('.lvl').forEach(el => el.classList.toggle('on',
+    el.dataset.quiz ? quiz : el.dataset.intro ? +el.dataset.intro === intro : typeof id === 'number' && +el.dataset.level === level));
+  document.querySelectorAll('.dot').forEach(el => {
+    el.classList.toggle('on', +el.dataset.step === step);
+    el.classList.toggle('done', +el.dataset.step < step);
+  });
+  $('tag').textContent = quiz ? 'Quiz · 2 minutes' : intro ? `Intro ${intro} of 5` : `Level ${level} of 4`;
+  $('title').textContent = quiz ? 'Quick Quiz' : intro ? INTRO_TITLES[intro] : TEXT[level].title;
+  $('say').hidden = !!intro;                          // intro screens use their own exact text
+  $('keybox').hidden = !!intro || quiz;
+  if (quiz) $('say').textContent = "5 quick questions about today's lesson. Pick the best answer.";
+  else if (!intro) { $('say').textContent = TEXT[level].say; $('key').textContent = TEXT[level].key; }
+  $('next').textContent = intro === 5 ? 'Level 1 →' : intro ? 'Next →' : level === 4 ? 'Quiz →' : 'Next Level →';
+  $('next').disabled = false;
+  $('prev').disabled = step === 0;
+  $('quizBox').hidden = !quiz;
+  if (quiz) { if (!QZ.t0) QZ.t0 = performance.now(); renderQuiz(); }   // the 2-minute timer starts on first visit
+  $('c3').value = S[3].slider;
+  syncSliders();
+  history.replaceState(null, '', '#' + id);
+}
+function next() {
+  if (quiz && QZ.i < QUIZ.length) { quizNext(); return; }          // in the quiz, Next moves to the next question
+  if (step < STEPS.length - 1) goStep(step + 1);
+  else {
+    for (let i = 1; i <= 4; i++) S[i] = fresh(i);
+    IS = freshIntro();
+    Object.assign(QZ, { i: 0, picks: [], t0: 0, tEnd: 0 });
+    goStep(0);
+  }
+}
+
+$('next').addEventListener('click', next);
+$('prev').addEventListener('click', () => goStep(step - 1));
+document.querySelectorAll('.dot').forEach(b => b.addEventListener('click', () => goStep(+b.dataset.step)));
+
+$('qOpts').addEventListener('click', e => {
+  const b = e.target.closest('.opt');
+  if (b && !b.disabled) quizAnswer(+b.dataset.k);
+});
+$('qNext').addEventListener('click', quizNext);
+
+$('explainBtn').addEventListener('click', () => openExplain($('explainBox').hidden));
+$('exClose').addEventListener('click', () => openExplain(false));
+$('explainBox').addEventListener('click', e => { if (e.target === e.currentTarget) openExplain(false); });
+
+function toggleFullscreen() {
+  if (document.fullscreenElement) document.exitFullscreen();
+  else document.documentElement.requestFullscreen?.();
+}
+$('fs').addEventListener('click', toggleFullscreen);
+
+document.addEventListener('keydown', e => {
+  if (e.target.matches('input')) return;
+  if (quiz && e.key.length === 1 && 'abcd1234'.includes(e.key.toLowerCase())) {   // answer with A–D or 1–4
+    quizAnswer('abcd1234'.indexOf(e.key.toLowerCase()) % 4);
+    return;
+  }
+  if (e.key === 'ArrowRight' || e.key === 'PageDown') { next(); e.preventDefault(); }
+  else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { goStep(step - 1); e.preventDefault(); }
+  else if (e.key === 'f' || e.key === 'F') toggleFullscreen();
+  else if (e.key === 'e' || e.key === 'E') openExplain($('explainBox').hidden);
+  else if (e.key === 'Escape') openExplain(false);
+});
+
+goStep(step);
+started = true;
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
