@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Build the Widest Road</title>
+<script>
+  /* ============================================================
+     PRESENTER NAMES: edit these three names before class.
+     ============================================================ */
+  window.PRESENTERS = ['Presenter 1', 'Presenter 2', 'Presenter 3'];
+</script>
 <style>
   :root {
     --bg: #f5f3ee;
@@ -19,6 +25,7 @@
     --warn: #c76a00;
     --term: #6741d9;
     --pass: #2f9e44;
+    --ch: #1c62d6;          /* colour of the current chapter, set by the script */
   }
   * { box-sizing: border-box; }
   html { font-size: clamp(15px, min(1.38vw, 2.45vh), 30px); }
@@ -31,22 +38,21 @@
   }
   button { font: inherit; cursor: pointer; }
 
-  /* ---------- header ---------- */
-  header { display: flex; align-items: center; gap: 1rem; padding: .7rem 1.2rem .6rem; }
+  /* ---------- header: title, chapter progress, navigation ---------- */
+  header { display: flex; align-items: center; gap: 1.2rem; padding: .6rem 1.2rem .55rem; }
   .brand { display: flex; flex-direction: column; gap: .05rem; min-width: 0; }
   .brand b { font-size: 1.3rem; font-weight: 800; letter-spacing: -.01em; white-space: nowrap; line-height: 1.15; }
   .brand span { color: var(--muted); font-weight: 600; font-size: .7rem; white-space: nowrap; }
-  .dots { display: flex; align-items: center; gap: .45rem; margin-left: auto; }
-  .dot {
-    width: 2rem; height: 2rem; padding: 0; border-radius: 50%;
-    border: 2px solid var(--line); background: #fff; color: var(--muted);
-    font-weight: 800; font-size: .85rem; display: grid; place-items: center;
-  }
-  .dot.intro { width: 1.75rem; height: 1.75rem; font-size: .78rem; }
-  .dot.done { border-color: #b9c0cc; color: var(--ink); }
-  .dot.on { background: var(--ink); border-color: var(--ink); color: #fff; }
-  .plabel { font-size: .62rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
-  .parrow { color: var(--muted); font-weight: 800; margin: 0 .25rem; }
+  .progress { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .3rem; }
+  .plabel-row { display: flex; align-items: baseline; gap: .6rem; font-size: .8rem; font-weight: 800; white-space: nowrap; overflow: hidden; }
+  .plabel-row b { color: var(--ch); letter-spacing: .08em; text-transform: uppercase; }
+  .plabel-row span { color: var(--muted); font-weight: 700; overflow: hidden; text-overflow: ellipsis; }
+  .segs { display: flex; align-items: center; gap: .18rem; height: 1rem; }
+  .segs .gap { width: .6rem; flex: none; }
+  .seg { flex: 1; min-width: 0; height: .5rem; padding: 0; border: 0; border-radius: 99px; background: var(--c); opacity: .22; transition: opacity .2s, height .2s; }
+  .seg:hover { opacity: .5; }
+  .seg.done { opacity: .75; }
+  .seg.on { opacity: 1; height: .85rem; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--c); }
   .nav { display: flex; gap: .5rem; }
 
   .btn {
@@ -75,9 +81,10 @@
     padding: 1.15rem 1.3rem;
     display: flex; flex-direction: column; gap: .75rem;
     box-shadow: 0 1px 2px rgba(23,32,46,.06), 0 8px 24px rgba(23,32,46,.06);
+    border-top: .35rem solid var(--ch);
     overflow-y: auto;
   }
-  .tag { font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--blue); }
+  .tag { font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--ch); }
   h1 { margin: -.35rem 0 0; font-size: 1.7rem; line-height: 1.1; letter-spacing: -.015em; }
   .say { margin: 0; font-size: 1rem; line-height: 1.38; color: #2c3546; }
 
@@ -124,13 +131,13 @@
   .readouts > div { display: flex; flex-direction: column; gap: .3rem; }
   .mid { font-size: 1.1rem; font-weight: 800; line-height: 1.2; }
 
-  /* ---------- intro ---------- */
+  /* ---------- panel text ---------- */
   .reveal { display: none; }
   .reveal.on { display: block; animation: pop .4s ease-out both; }
   @keyframes pop { from { opacity: 0; transform: translateY(6px) scale(.98); } to { opacity: 1; transform: none; } }
   .callout { background: #eef4ff; font-size: 1.05rem; font-weight: 600; line-height: 1.38; border-radius: .8rem; padding: .7rem .95rem; }
   .hl { color: var(--term); font-weight: 800; }
-  .pass { color: var(--pass); }
+  .pass { color: var(--blue); }
   .fail { color: var(--red); }
   .itext p { margin: 0; font-size: 1.12rem; line-height: 1.4; color: #2c3546; }
   .itext p.lead { font-size: 1.3rem; font-weight: 800; line-height: 1.3; color: var(--ink); }
@@ -155,19 +162,174 @@
   .sl input[type=range]::-moz-range-track { background: #dcd7cc; }
   .rule { background: #eef4ff; border-radius: .75rem; padding: .5rem .85rem; font-size: 1rem; font-weight: 700; line-height: 1.4; }
   .kline { margin: 0; background: #f3f0ff; border-radius: .6rem; padding: .45rem .7rem; font-size: .9rem; line-height: 1.4; color: #2c3546; }
+  .handover {
+    border-radius: .8rem; padding: .6rem .85rem; background: #f6f4ef; border-left: .35rem solid var(--nc, var(--ink));
+    font-size: 1.02rem; font-weight: 700; line-height: 1.35;
+  }
+  .handover small { display: block; margin-top: .25rem; font-size: .85rem; font-weight: 800; color: var(--nc, var(--muted)); }
 
-  /* ---------- quiz ---------- */
-  .quiz { position: absolute; inset: 0; z-index: 1; display: flex; }
-  .quiz[hidden] { display: none; }
-  .quiz-card {
-    flex: 1; min-width: 0; overflow-y: auto; background: #fff; border-radius: 1.1rem; padding: 1.4rem 1.7rem;
-    display: flex; flex-direction: column; gap: 1rem;
+  /* ---------- slides: HTML screens that sit on the stage ---------- */
+  .slide {
+    position: absolute; inset: 0; z-index: 1; display: none; flex-direction: column; gap: 1rem;
+    background: #fff; border-radius: 1.1rem; padding: 1.4rem 1.6rem; overflow-y: auto;
     box-shadow: 0 1px 2px rgba(23,32,46,.06), 0 8px 24px rgba(23,32,46,.06);
   }
-  .quiz-card h2 { margin: 0; font-size: 1.75rem; line-height: 1.25; letter-spacing: -.01em; }
-  .opts { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+  .slide.on { display: flex; animation: pop .35s ease-out both; }
+  .slide h2 { margin: 0; font-size: 1.6rem; line-height: 1.2; letter-spacing: -.01em; }
+  .slide h3 { margin: 0; font-size: 1.2rem; line-height: 1.2; }
+  .slide.vcenter { justify-content: center; }
+  .cap { margin: 0; font-size: 1rem; line-height: 1.4; color: var(--muted); font-weight: 600; text-align: center; }
+
+  /* Max the robot */
+  .max { width: 11rem; height: 13.75rem; flex: none; }
+  .bubble {
+    position: relative; max-width: 25rem; background: #fff; border: 3px solid var(--ink); border-radius: 1.3rem;
+    padding: 1rem 1.2rem; font-size: 1.22rem; font-weight: 700; line-height: 1.4; text-align: left;
+  }
+  .bubble::before { content: ''; position: absolute; left: -1.25rem; top: 2rem; border: .65rem solid transparent; border-right: 1.1rem solid var(--ink); }
+  .bubble::after { content: ''; position: absolute; left: -.85rem; top: 2.2rem; border: .45rem solid transparent; border-right: .8rem solid #fff; }
+
+  /* chapter title card */
+  .titlecard { background: var(--ch); color: #fff; align-items: center; justify-content: center; text-align: center; gap: .5rem; }
+  .titlecard .max { width: 8.5rem; height: 10.6rem; }
+  .titlecard .chnum { font-size: 1.1rem; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; opacity: .85; }
+  .titlecard .chname { font-size: 3rem; font-weight: 800; line-height: 1.05; letter-spacing: -.02em; }
+  .titlecard .who { margin-top: .4rem; font-size: 1.3rem; font-weight: 700; background: rgba(255,255,255,.18); padding: .35rem 1.1rem; border-radius: 99px; }
+
+  /* cover */
+  .cover { background: linear-gradient(160deg, #eaf1ff, #fff 65%); align-items: center; justify-content: center; gap: 1.6rem; }
+  .cover-row { display: flex; align-items: center; gap: 2rem; }
+  .hook { font-size: 2.3rem; font-weight: 800; line-height: 1.15; letter-spacing: -.02em; color: var(--ch); text-align: center; }
+
+  /* side-by-side cards */
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .ccard { border: 2px solid var(--line); border-radius: 1rem; padding: 1rem 1.2rem; display: flex; flex-direction: column; gap: .7rem; }
+  .ccard.hi { border-color: var(--ch); background: #f5f8ff; }
+  .ccard p { margin: 0; font-size: 1.1rem; line-height: 1.35; }
+  .flowmini { display: flex; align-items: center; flex-wrap: wrap; gap: .35rem; font-size: 1rem; font-weight: 800; color: var(--muted); }
+  .chip { background: #f4f1ea; color: var(--ink); border-radius: .6rem; padding: .3rem .55rem; font-weight: 800; }
+  .chip.out { background: var(--ink); color: #fff; }
+  .kids { display: flex; align-items: stretch; gap: .8rem; }
+  .fruit { flex: 1; display: flex; flex-direction: column; align-items: center; gap: .15rem; text-align: center; border: 2px dashed var(--line); border-radius: 1rem; padding: .6rem; }
+  .fruit .em { font-size: 2.6rem; line-height: 1.1; }
+  .fruit b { font-size: 1.05rem; }
+  .fruit small { font-size: .85rem; font-weight: 600; color: var(--muted); }
+  .fruit.q { border-style: solid; border-color: var(--gold); background: #fff9e6; }
+  .karrow { align-self: center; font-size: 1rem; font-weight: 800; color: var(--muted); text-align: center; }
+  .supbox { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: .8rem; background: #f6f4ef; border-radius: 1rem; padding: 1rem; font-size: 1.35rem; font-weight: 800; }
+  .supbox span { color: var(--muted); }
+  .bigex { padding: .4rem 0; text-align: center; font-size: 2.4rem; font-weight: 800; }
+  .bigex small { font-size: 1.1rem; color: var(--muted); }
+
+  /* hyperplane cards */
+  .four { display: grid; grid-template-columns: repeat(4, 1fr); gap: .8rem; }
+  .dcard { display: flex; flex-direction: column; align-items: center; gap: .35rem; text-align: center; border: 2px solid var(--line); border-radius: 1rem; padding: .8rem .6rem; }
+  .dcard svg { width: 100%; height: auto; }
+  .dcard b { font-size: 1.5rem; color: var(--ch); }
+  .dcard span { font-size: 1.05rem; font-weight: 700; color: #2c3546; }
+
+  /* playground test, walkway (Level 3) */
+  .walk { display: grid; gap: .4rem; }
+  .walk button {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: .1rem .45rem; text-align: left;
+    border: 2px solid var(--line); background: #fff; border-radius: .7rem; padding: .35rem .7rem;
+    font-size: .9rem; line-height: 1.3; color: #2c3546;
+  }
+  .walk button b { font-size: .98rem; color: var(--ink); }
+  .walk button:hover { background: #f6f4ef; }
+  .walk button.on { border-color: var(--ch); background: #fff5ec; }
+  .readouts.with-reset { grid-template-columns: auto 1fr auto; }
+  .btn.icon { padding: .45rem .75rem; align-self: end; }
+
+  /* optional deep dive: the SVM formula */
+  .ddtag { align-self: center; background: #fff1e4; color: #b04500; font-size: .85rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; padding: .3rem .9rem; border-radius: 99px; }
+  .formula { text-align: center; font-family: "Cambria Math", Cambria, "Times New Roman", serif; font-size: 2.3rem; line-height: 1.5; }
+  .formula .st { font-size: 1.45rem; color: #2c3546; }
+  .fp { border-radius: .4rem; padding: 0 .2rem; transition: background .3s, color .3s; }
+  .fp.on { background: #ffe1c2; color: #b04500; }
+  .dd { width: min(40rem, 100%); margin: 0 auto; padding: 0; list-style: none; display: grid; gap: .55rem; }
+  .dd li {
+    display: flex; align-items: baseline; gap: .9rem; background: #f6f4ef; border-radius: .7rem; padding: .5rem .9rem;
+    font-size: 1.15rem; line-height: 1.4; opacity: 0; transform: translateY(6px); transition: opacity .4s, transform .4s;
+  }
+  .dd li.on { opacity: 1; transform: none; }
+  .dd li b { min-width: 5rem; font-family: "Cambria Math", Cambria, serif; font-size: 1.25rem; color: #b04500; }
+
+  /* Chapter 3 slides */
+  .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: .9rem; }
+  .kern .dcard b, .three .dcard b { font-size: 1.25rem; }
+  .kern .dcard span, .three .dcard span { font-size: .95rem; font-weight: 600; line-height: 1.35; }
+  .dcard.good-fit { border-color: var(--pass); background: #f3fbf5; }
+  .tabs { display: flex; gap: .5rem; }
+  .tab { border: 2px solid var(--line); background: #fff; border-radius: 99px; padding: .4rem 1.1rem; font-weight: 800; font-size: 1rem; color: var(--muted); }
+  .tab.on { background: var(--ch); border-color: var(--ch); color: #fff; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+  .grid2[hidden] { display: none; }
+  .tcard { display: flex; align-items: center; gap: .9rem; border: 2px solid var(--line); border-radius: 1rem; padding: .75rem .9rem; }
+  .tcard svg { width: 7rem; flex: none; }
+  .tcard .em { font-size: 2.6rem; flex: none; width: 3.4rem; text-align: center; }
+  .tcard b { display: block; font-size: 1.12rem; margin-bottom: .15rem; }
+  .tcard span { display: block; font-size: 1rem; line-height: 1.35; color: #2c3546; }
+  .tcard small { display: block; margin-top: .25rem; font-size: .85rem; font-weight: 700; color: var(--warn); }
+  .ccard ul { margin: 0; padding-left: 1.2rem; display: grid; gap: .5rem; font-size: 1.08rem; line-height: 1.4; }
+  .ccard.pro { border-color: #b7e0c2; background: #f3fbf5; }
+  .ccard.pro h3 { color: var(--good); }
+  .ccard.con { border-color: #f3c0c0; background: #fff6f6; }
+  .ccard.con h3 { color: var(--bad); }
+  .cg { width: 100%; border-collapse: collapse; font-size: .82rem; line-height: 1.3; }
+  .cg th, .cg td { padding: .3rem .35rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  .cg th { background: #f6f4ef; font-size: .85rem; }
+  .cg td:first-child { font-weight: 800; color: var(--muted); }
+  .flow { display: flex; align-items: stretch; gap: .35rem; }
+  .flow > i { align-self: center; font-style: normal; font-weight: 800; color: var(--muted); }
+  .fstep { flex: 1; display: flex; flex-direction: column; align-items: center; gap: .2rem; text-align: center; background: #f6f4ef; border-radius: .9rem; padding: .6rem .35rem; }
+  .fstep b { width: 1.9rem; height: 1.9rem; border-radius: 50%; display: grid; place-items: center; background: var(--ch); color: #fff; font-size: .95rem; }
+  .fstep span { font-size: .95rem; font-weight: 800; line-height: 1.2; }
+  .fstep small { font-size: .78rem; font-weight: 600; line-height: 1.25; color: var(--muted); }
+  .mystery { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 1.2rem; border: 2px solid var(--ch); border-radius: 1rem; padding: .9rem 1.2rem; }
+  .mystery h3 { margin-bottom: .4rem; }
+  .msl { display: grid; grid-template-columns: 9rem 1fr 1.8rem; align-items: center; gap: .6rem; font-size: 1rem; font-weight: 700; }
+  .msl output { text-align: right; font-weight: 800; }
+  .msl input[type=range] { height: 1.9rem; }
+  .msl input[type=range]::-webkit-slider-runnable-track { background: #dcd7cc; }
+  .msl input[type=range]::-moz-range-track { background: #dcd7cc; }
+  .mcalc { margin-top: .4rem; background: #f4f1ea; border-radius: .6rem; padding: .35rem .7rem; font-family: Consolas, "Cascadia Mono", monospace; font-size: 1rem; }
+  .mout { margin-top: .45rem; font-size: 1.3rem; font-weight: 800; line-height: 1.3; }
+  .mout small { display: block; font-size: .9rem; font-weight: 600; color: var(--muted); }
+  .mgraph { width: 12.5rem; height: 12.5rem; }
+
+  /* ending and bonus */
+  .closing .max { width: 8rem; height: 10rem; }
+  .bubble.long { max-width: 34rem; font-size: 1.02rem; font-weight: 600; }
+  .oneidea { max-width: 44rem; background: #fff7dc; border-left: .4rem solid var(--gold); border-radius: .8rem; padding: .8rem 1.1rem; font-size: 1.15rem; line-height: 1.45; opacity: 0; transform: translateY(8px); transition: opacity .5s, transform .5s; }
+  .oneidea.on { opacity: 1; transform: none; }
+  .oneidea b { display: block; margin-bottom: .2rem; font-size: .8rem; letter-spacing: .12em; text-transform: uppercase; color: #8a6500; }
+  .bgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: auto 0; }
+  .bgrid[hidden] { display: none; }
+  .bcard { display: flex; flex-direction: column; align-items: center; gap: .4rem; padding: 1.5rem 1rem; text-align: center; background: #fff; border: 2px solid var(--line); border-radius: 1.1rem; transition: transform .15s, border-color .15s; }
+  .bcard:hover { transform: translateY(-3px); border-color: var(--ch); }
+  .bcard .em { font-size: 3rem; line-height: 1.1; }
+  .bcard b { font-size: 1.2rem; }
+  .bcard small { font-size: .92rem; font-weight: 600; color: var(--muted); }
+  .bview { display: flex; flex-direction: column; gap: .8rem; }
+  .bview[hidden] { display: none; }
+  .bhead { display: flex; align-items: center; gap: .9rem; }
+  .bhead h2 { font-size: 1.35rem; }
+  .pygrid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 1rem; align-items: start; }
+  .code { margin: 0; overflow: auto; white-space: pre; background: #17202e; color: #e6edf7; border-radius: .8rem; padding: .8rem 1rem; font-family: Consolas, "Cascadia Mono", monospace; font-size: .66rem; line-height: 1.45; }
+  .code .c { color: #8fa3c0; }
+  .btable { width: 100%; border-collapse: collapse; font-size: .9rem; line-height: 1.35; }
+  .btable th, .btable td { padding: .35rem .5rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  .btable th { background: #f6f4ef; }
+  .btable code { font-family: Consolas, "Cascadia Mono", monospace; font-size: .85em; }
+  .bnote { margin: 0; font-size: .95rem; line-height: 1.4; color: #2c3546; background: #f6f4ef; border-radius: .7rem; padding: .55rem .8rem; }
+  .acc { font-size: 1.15rem; background: #eef4ff; border-radius: .7rem; padding: .6rem .9rem; }
+
+  /* ---------- quiz ---------- */
+  .quizslide .btn { align-self: flex-start; font-size: 1.05rem; }
+  .opts { display: grid; grid-template-columns: 1fr; gap: .7rem; }
   .opt {
-    display: flex; align-items: center; gap: .8rem; min-height: 4.2rem; text-align: left;
+    display: flex; align-items: center; gap: .8rem; min-height: 3.5rem; text-align: left;
     padding: .7rem 1rem; border: 2px solid var(--line); border-radius: .9rem; background: #fff;
     font-size: 1.15rem; font-weight: 700; line-height: 1.3; color: var(--ink); transition: background .15s, border-color .15s;
   }
@@ -179,7 +341,6 @@
   .opt.wrong { background: #fdecec; border-color: var(--red); }
   .opt.wrong i { background: var(--red); color: #fff; }
   .qwhy { margin: 0; min-height: 1.5em; font-size: 1.1rem; line-height: 1.4; }
-  .quiz-card .btn { align-self: flex-start; font-size: 1.05rem; }
   .review { display: grid; gap: .55rem; }
   .review div { display: flex; gap: .7rem; align-items: baseline; font-size: 1.02rem; line-height: 1.35; }
   .review small { display: block; color: var(--muted); font-size: .92rem; font-weight: 600; }
@@ -189,42 +350,35 @@
   .qdots i.ok { background: var(--pass); }
   .qdots i.no { background: var(--red); }
 
-  /* ---------- "Explain more" notes ---------- */
-  .key-top { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .2rem; }
-  .explain-btn {
-    border: 2px solid #ecd28a; background: #fff; color: #7a5800; font-weight: 800; font-size: .74rem;
-    padding: .2rem .65rem; border-radius: 99px; white-space: nowrap;
-  }
-  .explain-btn:hover { background: #fff2c4; }
-  .explain {
-    position: absolute; inset: 0; z-index: 2; padding: .5rem;
-    display: flex; align-items: flex-start; justify-content: center;
-    background: rgba(245,243,238,.6); backdrop-filter: blur(2px);
-  }
-  .explain[hidden] { display: none; }
-  .explain-card {
-    position: relative; width: 100%; max-width: 48rem; max-height: 100%; overflow-y: auto;
-    background: #fff; border-radius: 1.1rem; padding: 1.1rem 1.5rem 1.2rem;
-    box-shadow: 0 2px 4px rgba(23,32,46,.08), 0 16px 40px rgba(23,32,46,.16);
-    animation: pop .3s ease-out both;
-  }
-  .explain-card h2 { margin: .15rem 2.5rem .7rem 0; font-size: 1.45rem; line-height: 1.15; letter-spacing: -.01em; }
-  .explain-card ul { margin: 0; padding-left: 1.25rem; display: grid; gap: .55rem; }
-  .explain-card li { font-size: 1.02rem; line-height: 1.42; }
-  .explain-card li::marker { color: var(--gold); }
-  .explain-close {
-    position: absolute; top: .8rem; right: .9rem; width: 2.2rem; height: 2.2rem; padding: 0;
-    border-radius: 50%; border: 2px solid var(--line); background: #fff; font-size: 1rem; font-weight: 800;
-  }
-  .explain-close:hover { background: #eef1f6; }
-  .math { margin-top: .9rem; background: #f4f1ea; border-radius: .7rem; padding: .65rem .95rem; font-size: .95rem; line-height: 1.45; }
-  .math code { font-family: Consolas, "Cascadia Mono", monospace; font-size: .95em; background: #fff; padding: 0 .3rem; border-radius: .3rem; white-space: nowrap; }
-  .math b { display: block; font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: .2rem; }
-  .math[hidden] { display: none; }
-
   .key { margin-top: auto; background: #fff7dc; border-left: .35rem solid var(--gold); border-radius: .7rem; padding: .7rem 1rem; }
-  .key b { display: block; font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: #8a6500; }
+  .key b { display: block; margin-bottom: .2rem; font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: #8a6500; }
   .key p { margin: 0; font-size: .93rem; line-height: 1.38; }
+
+  /* ---------- presenter notes (N) and chapter menu (M) ---------- */
+  .notes {
+    position: fixed; left: 1.2rem; right: 1.2rem; bottom: 1rem; z-index: 20; max-height: 38vh; overflow-y: auto;
+    background: rgba(23,32,46,.96); color: #fff; border-radius: 1rem; border-top: .4rem solid var(--ch);
+    padding: .85rem 1.3rem 1rem; box-shadow: 0 10px 30px rgba(0,0,0,.3);
+  }
+  .notes[hidden] { display: none; }
+  .notes h4 { margin: 0 0 .4rem; font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; color: #c9d3e6; }
+  .notes ul { margin: 0; padding-left: 1.2rem; display: grid; gap: .35rem; }
+  .notes li { font-size: 1.02rem; line-height: 1.42; }
+  .menu { position: fixed; inset: 0; z-index: 30; display: flex; align-items: center; justify-content: center; padding: 1.5rem; background: rgba(23,32,46,.45); }
+  .menu[hidden] { display: none; }
+  .menu-card { width: min(64rem, 100%); max-height: 100%; overflow-y: auto; background: #fff; border-radius: 1.2rem; padding: 1.2rem 1.4rem; box-shadow: 0 20px 50px rgba(0,0,0,.3); }
+  .menu-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: .8rem; }
+  .menu-head h2 { margin: 0; font-size: 1.4rem; }
+  .menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: .9rem; }
+  .mch { border: 2px solid var(--c); border-radius: .9rem; overflow: hidden; }
+  .mch .mtitle { width: 100%; border: 0; background: var(--c); color: #fff; padding: .55rem .8rem; text-align: left; font-size: 1rem; font-weight: 800; }
+  .mch .mtitle small { display: block; font-size: .8rem; font-weight: 600; opacity: .9; }
+  .mch ol { margin: 0; padding: .4rem .5rem .6rem 1.9rem; display: grid; gap: .1rem; }
+  .mch li button { width: 100%; border: 0; background: none; padding: .15rem .35rem; border-radius: .4rem; text-align: left; font-size: .92rem; color: var(--ink); }
+  .mch li button:hover { background: #f4f1ea; }
+  .mch li button.cur { background: #f4f1ea; font-weight: 800; }
+  .keys { margin-top: .9rem; font-size: .88rem; color: var(--muted); }
+  .keys kbd { font-family: inherit; font-weight: 800; color: var(--ink); background: #f4f1ea; border: 1px solid var(--line); border-radius: .35rem; padding: 0 .35rem; }
 
   /* ---------- narrow screens: stack ---------- */
   @media (max-width: 760px), (max-aspect-ratio: 4/5) {
@@ -232,85 +386,486 @@
     body { height: auto; min-height: 100vh; overflow: auto; }
     header { flex-wrap: wrap; padding: .7rem 1rem; }
     .brand span { display: none; }
+    .progress { order: 3; flex-basis: 100%; }
     main { flex-direction: column; padding: 0 1rem 1rem; }
     .stage { flex: none; height: calc((100vw - 2rem) * .64); }
     .panel { flex: none; overflow: visible; }
+    .two, .four { grid-template-columns: 1fr 1fr; }
   }
 </style>
 </head>
 <body>
 
+<!-- Max the robot, drawn once and reused -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="max" viewBox="0 0 200 250">
+    <line x1="100" y1="36" x2="100" y2="16" stroke="#17202e" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="100" cy="13" r="9" fill="#f5b400" stroke="#17202e" stroke-width="4"/>
+    <rect x="26" y="70" width="16" height="32" rx="6" fill="#1c62d6" stroke="#17202e" stroke-width="4"/>
+    <rect x="158" y="70" width="16" height="32" rx="6" fill="#1c62d6" stroke="#17202e" stroke-width="4"/>
+    <rect x="40" y="36" width="120" height="98" rx="32" fill="#eef3fb" stroke="#17202e" stroke-width="5"/>
+    <rect x="56" y="54" width="88" height="62" rx="22" fill="#17202e"/>
+    <circle cx="82" cy="82" r="9" fill="#7fd1ff"/>
+    <circle cx="118" cy="82" r="9" fill="#7fd1ff"/>
+    <circle cx="85" cy="79" r="3" fill="#fff"/>
+    <circle cx="121" cy="79" r="3" fill="#fff"/>
+    <path d="M86 100 q14 10 28 0" fill="none" stroke="#7fd1ff" stroke-width="5" stroke-linecap="round"/>
+    <path d="M60 158 q-26 6 -32 34" fill="none" stroke="#17202e" stroke-width="7" stroke-linecap="round"/>
+    <path d="M140 158 q26 -8 32 -36" fill="none" stroke="#17202e" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="27" cy="196" r="9" fill="#eef3fb" stroke="#17202e" stroke-width="4"/>
+    <circle cx="173" cy="118" r="9" fill="#eef3fb" stroke="#17202e" stroke-width="4"/>
+    <rect x="56" y="140" width="88" height="72" rx="22" fill="#1c62d6" stroke="#17202e" stroke-width="5"/>
+    <rect x="74" y="156" width="52" height="34" rx="7" fill="#5d636e"/>
+    <path d="M100 160 v26" stroke="#ffd43b" stroke-width="3" stroke-dasharray="5 4"/>
+    <rect x="66" y="214" width="26" height="24" rx="9" fill="#17202e"/>
+    <rect x="108" y="214" width="26" height="24" rx="9" fill="#17202e"/>
+  </symbol>
+</svg>
+
 <header>
-  <div class="brand"><b>🛣️ Build the Widest Road</b><span>a Support Vector Machine story</span></div>
-  <div class="dots" id="dots">
-    <span class="plabel">Intro</span>
-    <button class="dot intro" data-step="0" aria-label="Intro 1">1</button>
-    <button class="dot intro" data-step="1" aria-label="Intro 2">2</button>
-    <button class="dot intro" data-step="2" aria-label="Intro 3">3</button>
-    <button class="dot intro" data-step="3" aria-label="Intro 4">4</button>
-    <button class="dot intro" data-step="4" aria-label="Intro 5">5</button>
-    <span class="parrow" aria-hidden="true">→</span>
-    <span class="plabel">Levels</span>
-    <button class="dot" data-step="5" aria-label="Level 1">1</button>
-    <button class="dot" data-step="6" aria-label="Level 2">2</button>
-    <button class="dot" data-step="7" aria-label="Level 3">3</button>
-    <button class="dot" data-step="8" aria-label="Level 4">4</button>
-    <span class="parrow" aria-hidden="true">→</span>
-    <span class="plabel">Quiz</span>
-    <button class="dot intro" data-step="9" aria-label="Quiz" title="Quiz">?</button>
+  <div class="brand"><b>🛣️ Build the Widest Road</b><span>Max's Support Vector Machine story</span></div>
+  <div class="progress">
+    <div class="plabel-row" id="plabel"></div>
+    <div class="segs" id="segs"></div>
   </div>
   <div class="nav">
-    <button class="btn ghost" id="prev" aria-label="Back">←</button>
-    <button class="btn go" id="next">Next Level →</button>
+    <button class="btn ghost" id="prev" aria-label="Back" title="Back (←)">←</button>
+    <button class="btn go" id="next" title="Next (→ or Space)">Next →</button>
+    <button class="btn ghost" id="menuBtn" aria-label="Chapter menu" title="Chapter menu (M)">☰</button>
     <button class="btn ghost" id="fs" aria-label="Full screen" title="Full screen (F)">⛶</button>
   </div>
 </header>
 
 <main>
   <section class="stage">
-    <canvas id="map" role="img" aria-label="Map with a red village, a blue village and a road between them"></canvas>
-    <div class="explain" id="explainBox" hidden>
-      <div class="explain-card" role="dialog" aria-labelledby="exTitle">
-        <button class="explain-close" id="exClose" aria-label="Close notes">✕</button>
-        <div class="tag">📖 Explain more</div>
-        <h2 id="exTitle"></h2>
-        <ul id="exList"></ul>
-        <div class="math" id="exMath" hidden></div>
+    <canvas id="map" role="img" aria-label="Interactive SVM graph"></canvas>
+
+    <!-- chapter title card (shared by all chapters) -->
+    <div class="slide titlecard" data-slide="title">
+      <svg class="max" viewBox="0 0 200 250" aria-hidden="true"><use href="#max" width="200" height="250"/></svg>
+      <div class="chnum" id="tcNum"></div>
+      <div class="chname" id="tcName"></div>
+      <div class="who" id="tcWho"></div>
+    </div>
+
+    <!-- Chapter 1 -->
+    <div class="slide cover" data-slide="cover">
+      <div class="cover-row">
+        <svg class="max" viewBox="0 0 200 250" aria-hidden="true"><use href="#max" width="200" height="250"/></svg>
+        <div class="bubble">Hi, I'm Max! 👋<br>I just joined your college.<br>My job: find students who might need extra help before the exam.</div>
+      </div>
+      <div class="hook">Can a robot predict who will pass?</div>
+    </div>
+
+    <div class="slide vcenter" data-slide="ml">
+      <div class="two">
+        <div class="ccard">
+          <h3>Traditional programming</h3>
+          <div class="flowmini"><span class="chip">Rules ✍️</span>+<span class="chip">Data</span>→<span class="chip out">Answers</span></div>
+          <p>We write the rules ourselves.</p>
+        </div>
+        <div class="ccard hi">
+          <h3>Machine Learning</h3>
+          <div class="flowmini"><span class="chip">Data</span>+<span class="chip">Answers</span>→<span class="chip out">Rules 🤖</span></div>
+          <p>The computer learns the rules from examples.</p>
+        </div>
+      </div>
+      <div class="kids">
+        <div class="fruit"><span class="em">🍎</span><b>Apple</b><small>red · round · smooth</small></div>
+        <div class="fruit"><span class="em">🍊</span><b>Orange</b><small>orange · round · textured</small></div>
+        <div class="karrow">100 examples<br>→</div>
+        <div class="fruit q"><span class="em">🍎</span><b>“That's an apple!”</b><small>a fruit it has never seen</small></div>
+      </div>
+      <p class="cap">A kid learns patterns from examples. Machine learning works the same way.</p>
+    </div>
+
+    <div class="slide vcenter" data-slide="supervised">
+      <div class="supbox">📚 Examples <span>+</span> ✅ Right answers <span>→</span> 🤖 Max learns</div>
+      <div class="two">
+        <div class="ccard hi"><h3>Classification</h3><div class="bigex">Pass <small>or</small> Fail?</div><p>Predicts a <b>category</b>.</p></div>
+        <div class="ccard"><h3>Regression</h3><div class="bigex">72 <small>/ 100</small></div><p>Predicts a <b>number</b>, like exam marks.</p></div>
       </div>
     </div>
-    <div class="quiz" id="quizBox" hidden>
-      <div class="quiz-card">
-        <div class="tag" id="qNum"></div>
-        <h2 id="qText"></h2>
-        <div class="opts" id="qOpts"></div>
-        <p class="qwhy" id="qWhy"></p>
-        <button class="btn go" id="qNext"></button>
+
+    <div class="slide vcenter" data-slide="hyper">
+      <div class="four">
+        <div class="dcard">
+          <svg viewBox="0 0 200 130" aria-hidden="true">
+            <line x1="12" y1="70" x2="188" y2="70" stroke="#17202e" stroke-width="3" stroke-linecap="round"/>
+            <g fill="#e03131" stroke="#fff" stroke-width="2.5"><circle cx="32" cy="70" r="8"/><circle cx="55" cy="70" r="8"/><circle cx="76" cy="70" r="8"/></g>
+            <g fill="#1c62d6" stroke="#fff" stroke-width="2.5"><circle cx="126" cy="70" r="8"/><circle cx="148" cy="70" r="8"/><circle cx="171" cy="70" r="8"/></g>
+            <path d="M100 46 L111 70 L100 94 L89 70 Z" fill="#f5b400" stroke="#17202e" stroke-width="2.5"/>
+          </svg>
+          <b>1D</b><span>a point</span>
+        </div>
+        <div class="dcard">
+          <svg viewBox="0 0 200 130" aria-hidden="true">
+            <rect x="10" y="8" width="180" height="114" rx="10" fill="#e8efe0"/>
+            <line x1="70" y1="122" x2="140" y2="8" stroke="#f5b400" stroke-width="7" stroke-linecap="round"/>
+            <g fill="#e03131" stroke="#fff" stroke-width="2.5"><circle cx="35" cy="95" r="8"/><circle cx="55" cy="60" r="8"/><circle cx="40" cy="32" r="8"/><circle cx="58" cy="108" r="8"/></g>
+            <g fill="#1c62d6" stroke="#fff" stroke-width="2.5"><circle cx="135" cy="100" r="8"/><circle cx="160" cy="70" r="8"/><circle cx="150" cy="32" r="8"/><circle cx="175" cy="104" r="8"/></g>
+          </svg>
+          <b>2D</b><span>a line</span>
+        </div>
+        <div class="dcard">
+          <svg viewBox="0 0 200 130" aria-hidden="true">
+            <path d="M30 40 h110 v80 h-110 z M30 40 l35 -28 h110 l-35 28 M140 120 l35 -28 v-80" fill="none" stroke="#9aa1ad" stroke-width="2"/>
+            <g fill="#e03131" stroke="#fff" stroke-width="2.5"><circle cx="46" cy="96" r="7"/><circle cx="60" cy="66" r="7"/><circle cx="44" cy="58" r="7"/></g>
+            <path d="M82 120 V40 L117 12 V92 Z" fill="rgba(245,180,0,.45)" stroke="#b07d00" stroke-width="2.5"/>
+            <g fill="#1c62d6" stroke="#fff" stroke-width="2.5"><circle cx="150" cy="82" r="7"/><circle cx="160" cy="50" r="7"/><circle cx="134" cy="102" r="7"/></g>
+          </svg>
+          <b>3D</b><span>a flat plane</span>
+        </div>
+        <div class="dcard">
+          <svg viewBox="0 0 200 130" aria-hidden="true">
+            <g fill="none" stroke="#9aa1ad" stroke-width="2">
+              <rect x="40" y="12" width="120" height="106"/><rect x="76" y="42" width="48" height="46"/>
+              <path d="M40 12 L76 42 M160 12 L124 42 M40 118 L76 88 M160 118 L124 88"/>
+            </g>
+            <path d="M30 100 L150 18 L172 38 L52 120 Z" fill="rgba(245,180,0,.45)" stroke="#b07d00" stroke-width="2.5"/>
+          </svg>
+          <b>4D+</b><span>a hyperplane</span>
+        </div>
+      </div>
+      <p class="cap">We can't draw 4D, but the maths works exactly the same way.</p>
+    </div>
+
+    <!-- Chapter 2 -->
+    <div class="slide vcenter" data-slide="deep">
+      <div class="ddtag">⭐ Optional deep dive</div>
+      <div class="formula">
+        min <span class="fp" data-p="0">½‖w‖²</span> + <span class="fp" data-p="1">C</span> <span class="fp" data-p="2">Σ ξᵢ</span>
+        <div class="st">subject to &nbsp;yᵢ(wᵀxᵢ + b) ≥ 1 − <span class="fp" data-p="3">ξᵢ</span>, &nbsp;ξᵢ ≥ 0</div>
+      </div>
+      <ol class="dd">
+        <li data-b="0"><b>½‖w‖²</b><span>The first part rewards a wide margin.</span></li>
+        <li data-b="1"><b>C · Σξᵢ</b><span>The second part penalises breaking the rules.</span></li>
+        <li data-b="2"><b>C</b><span>controls how much rule-breaking matters.</span></li>
+        <li data-b="3"><b>ξᵢ</b><span>measures how much each point breaks its margin rule.</span></li>
+      </ol>
+    </div>
+
+    <!-- Chapter 3 -->
+    <div class="slide vcenter" data-slide="kernels">
+      <div class="four kern">
+        <div class="dcard">
+          <svg viewBox="0 0 200 130" aria-hidden="true">
+            <rect x="6" y="6" width="188" height="118" rx="10" fill="#e8efe0"/>
+            <line x1="40" y1="124" x2="165" y2="6" stroke="#f5b400" stroke-width="7" stroke-linecap="round"/>
+            <g fill="#e03131" stroke="#fff" stroke-width="2.5"><circle cx="30" cy="40" r="8"/><circle cx="50" cy="80" r="8"/><circle cx="85" cy="40" r="8"/><circle cx="30" cy="104" r="8"/></g>
+            <g fill="#1c62d6" stroke="#fff" stroke-width="2.5"><circle cx="150" cy="60" r="8"/><circle cx="170" cy="100" r="8"/><circle cx="120" cy="102" r="8"/><circle cx="178" cy="36" r="8"/></g>
+          </svg>
+          <b>Linear</b><span>A straight line. Start here, especially for simple or text data.</span>
+        </div>
+        <div class="dcard">
+          <svg viewBox="0 0 200 130" aria-hidden="true">
+            <rect x="6" y="6" width="188" height="118" rx="10" fill="#e8efe0"/>
+            <path d="M22 10 Q100 200 178 10" fill="none" stroke="#f5b400" stroke-width="7" stroke-linecap="round"/>
+            <g fill="#1c62d6" stroke="#fff" stroke-width="2.5"><circle cx="100" cy="30" r="8"/><circle cx="75" cy="52" r="8"/><circle cx="126" cy="54" r="8"/></g>
+            <g fill="#e03131" stroke="#fff" stroke-width="2.5"><circle cx="28" cy="70" r="8"/><circle cx="172" cy="72" r="8"/><circle cx="60" cy="112" r="8"/><circle cx="142" cy="112" r="8"/></g>
+          </svg>
+          <b>Polynomial</b><span>A curved boundary, for patterns that bend.</span>
+        </div>
+        <div class="dcard">
+          <svg viewBox="0 0 200 130" aria-hidden="true">
+            <rect x="6" y="6" width="188" height="118" rx="10" fill="#e8efe0"/>
+            <circle cx="100" cy="65" r="36" fill="none" stroke="#f5b400" stroke-width="7"/>
+            <g fill="#e03131" stroke="#fff" stroke-width="2.5"><circle cx="92" cy="58" r="8"/><circle cx="110" cy="72" r="8"/></g>
+            <g fill="#1c62d6" stroke="#fff" stroke-width="2.5"><circle cx="40" cy="30" r="8"/><circle cx="160" cy="28" r="8"/><circle cx="34" cy="100" r="8"/><circle cx="166" cy="102" r="8"/><circle cx="100" cy="116" r="7"/><circle cx="100" cy="14" r="7"/></g>
+          </svg>
+          <b>RBF (Gaussian)</b><span>Flexible shapes, like red in the middle. A popular default.</span>
+        </div>
+        <div class="dcard">
+          <svg viewBox="0 0 200 130" aria-hidden="true">
+            <rect x="6" y="6" width="188" height="118" rx="10" fill="#e8efe0"/>
+            <path d="M12 112 C 90 112, 110 18, 188 18" fill="none" stroke="#f5b400" stroke-width="7" stroke-linecap="round"/>
+            <g fill="#1c62d6" stroke="#fff" stroke-width="2.5"><circle cx="34" cy="40" r="8"/><circle cx="70" cy="66" r="8"/><circle cx="96" cy="30" r="8"/></g>
+            <g fill="#e03131" stroke="#fff" stroke-width="2.5"><circle cx="110" cy="96" r="8"/><circle cx="150" cy="70" r="8"/><circle cx="176" cy="104" r="8"/></g>
+          </svg>
+          <b>Sigmoid</b><span>S-shaped, related to neural networks. Less common.</span>
+        </div>
+      </div>
+      <p class="cap">A kernel decides what shape Max's boundary is allowed to take.</p>
+    </div>
+
+    <div class="slide vcenter" data-slide="fit">
+      <div class="three">
+        <div class="dcard">
+          <svg viewBox="0 0 200 130" aria-hidden="true">
+            <rect x="6" y="6" width="188" height="118" rx="10" fill="#e8efe0"/>
+            <line x1="8" y1="58" x2="192" y2="92" stroke="#f5b400" stroke-width="6" stroke-linecap="round"/>
+            <g fill="#e03131" stroke="#fff" stroke-width="2.5"><circle cx="26" cy="32" r="7"/><circle cx="34" cy="78" r="7"/><circle cx="58" cy="106" r="7"/><circle cx="96" cy="114" r="7"/><circle cx="46" cy="52" r="7"/><circle cx="74" cy="90" r="7"/></g>
+            <g fill="#1c62d6" stroke="#fff" stroke-width="2.5"><circle cx="104" cy="28" r="7"/><circle cx="134" cy="52" r="7"/><circle cx="164" cy="34" r="7"/><circle cx="178" cy="76" r="7"/><circle cx="140" cy="78" r="7"/><circle cx="116" cy="60" r="7"/></g>
+            <circle cx="150" cy="104" r="7" fill="#e03131" stroke="#fff" stroke-width="2.5"/>
+          </svg>
+          <b>Underfitting</b><span>📖 Learned only three definitions: stuck on harder questions.</span>
+        </div>
+        <div class="dcard good-fit">
+          <svg viewBox="0 0 200 130" aria-hidden="true">
+            <rect x="6" y="6" width="188" height="118" rx="10" fill="#e8efe0"/>
+            <path d="M70 6 Q 84 92 194 116" fill="none" stroke="#f5b400" stroke-width="6" stroke-linecap="round"/>
+            <g fill="#e03131" stroke="#fff" stroke-width="2.5"><circle cx="26" cy="32" r="7"/><circle cx="34" cy="78" r="7"/><circle cx="58" cy="106" r="7"/><circle cx="96" cy="114" r="7"/><circle cx="46" cy="52" r="7"/><circle cx="74" cy="90" r="7"/></g>
+            <g fill="#1c62d6" stroke="#fff" stroke-width="2.5"><circle cx="104" cy="28" r="7"/><circle cx="134" cy="52" r="7"/><circle cx="164" cy="34" r="7"/><circle cx="178" cy="76" r="7"/><circle cx="140" cy="78" r="7"/><circle cx="116" cy="60" r="7"/></g>
+            <circle cx="150" cy="104" r="7" fill="#e03131" stroke="#fff" stroke-width="2.5"/>
+          </svg>
+          <b>Good fit</b><span>💡 Understood the ideas: can solve new questions.</span>
+        </div>
+        <div class="dcard">
+          <svg viewBox="0 0 200 130" aria-hidden="true">
+            <rect x="6" y="6" width="188" height="118" rx="10" fill="#e8efe0"/>
+            <path d="M70 6 C 92 30, 60 50, 92 66 S 104 98, 128 92 S 132 118, 150 122 S 176 84, 160 96 S 172 108, 194 116" fill="none" stroke="#f5b400" stroke-width="5" stroke-linecap="round"/>
+            <g fill="#e03131" stroke="#fff" stroke-width="2.5"><circle cx="26" cy="32" r="7"/><circle cx="34" cy="78" r="7"/><circle cx="58" cy="106" r="7"/><circle cx="96" cy="114" r="7"/><circle cx="46" cy="52" r="7"/><circle cx="74" cy="90" r="7"/></g>
+            <g fill="#1c62d6" stroke="#fff" stroke-width="2.5"><circle cx="104" cy="28" r="7"/><circle cx="134" cy="52" r="7"/><circle cx="164" cy="34" r="7"/><circle cx="178" cy="76" r="7"/><circle cx="140" cy="78" r="7"/><circle cx="116" cy="60" r="7"/></g>
+            <circle cx="150" cy="104" r="7" fill="#e03131" stroke="#fff" stroke-width="2.5"/>
+          </svg>
+          <b>Overfitting</b><span>📝 Memorised last year's paper: stuck when a question changes.</span>
+        </div>
+      </div>
+      <p class="cap">Simplified sketches, not fitted models.</p>
+    </div>
+
+    <div class="slide" data-slide="real">
+      <div class="tabs">
+        <button class="tab" data-tab="types">Types of SVM</button>
+        <button class="tab" data-tab="uses">Real-world uses</button>
+      </div>
+      <div class="grid2" data-pane="types">
+        <div class="tcard">
+          <svg viewBox="0 0 120 80" aria-hidden="true">
+            <rect x="2" y="2" width="116" height="76" rx="8" fill="#e8efe0"/>
+            <path d="M40 78 L70 2 L96 2 L66 78 Z" fill="rgba(74,80,92,.75)"/>
+            <path d="M53 78 L83 2" stroke="#ffd43b" stroke-width="2.5" stroke-dasharray="6 5"/>
+            <g fill="#e03131" stroke="#fff" stroke-width="2"><circle cx="18" cy="24" r="6"/><circle cx="28" cy="56" r="6"/><circle cx="44" cy="30" r="6"/></g>
+            <g fill="#1c62d6" stroke="#fff" stroke-width="2"><circle cx="98" cy="40" r="6"/><circle cx="104" cy="66" r="6"/><circle cx="84" cy="62" r="6"/></g>
+          </svg>
+          <div><b>SVC: classification</b><span>Puts things into groups, like Pass or Fail.</span></div>
+        </div>
+        <div class="tcard">
+          <svg viewBox="0 0 120 80" aria-hidden="true">
+            <rect x="2" y="2" width="116" height="76" rx="8" fill="#e8efe0"/>
+            <path d="M8 74 L112 18 L112 2 L8 58 Z" fill="rgba(245,180,0,.35)"/>
+            <path d="M8 66 L112 10" stroke="#17202e" stroke-width="3"/>
+            <g fill="#7048e8" stroke="#fff" stroke-width="2"><circle cx="18" cy="62" r="5"/><circle cx="34" cy="50" r="5"/><circle cx="50" cy="48" r="5"/><circle cx="66" cy="36" r="5"/><circle cx="82" cy="30" r="5"/><circle cx="98" cy="22" r="5"/><circle cx="60" cy="62" r="5"/></g>
+          </svg>
+          <div><b>SVR: regression</b><span>Predicts a number, like marks. Most points stay inside a tube.</span></div>
+        </div>
+        <div class="tcard">
+          <svg viewBox="0 0 120 80" aria-hidden="true">
+            <rect x="2" y="2" width="116" height="76" rx="8" fill="#e8efe0"/>
+            <ellipse cx="48" cy="42" rx="34" ry="26" fill="none" stroke="#17202e" stroke-width="2.5" stroke-dasharray="6 5"/>
+            <g fill="#5a6577" stroke="#fff" stroke-width="2"><circle cx="34" cy="34" r="5"/><circle cx="50" cy="28" r="5"/><circle cx="62" cy="44" r="5"/><circle cx="42" cy="52" r="5"/><circle cx="54" cy="56" r="5"/><circle cx="30" cy="48" r="5"/></g>
+            <circle cx="100" cy="20" r="7" fill="#e03131" stroke="#fff" stroke-width="2"/>
+            <text x="100" y="24" font-size="10" font-weight="800" fill="#fff" text-anchor="middle">!</text>
+          </svg>
+          <div><b>One-Class SVM</b><span>Learns what “normal” looks like and flags the unusual.</span></div>
+        </div>
+        <div class="tcard">
+          <svg viewBox="0 0 120 80" aria-hidden="true">
+            <rect x="2" y="2" width="116" height="76" rx="8" fill="#e8efe0"/>
+            <path d="M60 2 L60 42 L2 70 M60 42 L118 70" stroke="#f5b400" stroke-width="4" fill="none"/>
+            <g fill="#e03131" stroke="#fff" stroke-width="2"><circle cx="22" cy="20" r="6"/><circle cx="36" cy="34" r="6"/><circle cx="18" cy="42" r="6"/></g>
+            <g fill="#1c62d6" stroke="#fff" stroke-width="2"><circle cx="90" cy="18" r="6"/><circle cx="100" cy="36" r="6"/><circle cx="82" cy="32" r="6"/></g>
+            <g fill="#2f9e44" stroke="#fff" stroke-width="2"><circle cx="50" cy="66" r="6"/><circle cx="66" cy="70" r="6"/><circle cx="72" cy="58" r="6"/></g>
+          </svg>
+          <div><b>More than 2 groups</b><span>One-vs-rest: one SVM per group, then combine the answers.</span></div>
+        </div>
+      </div>
+      <div class="grid2" data-pane="uses">
+        <div class="tcard"><span class="em">📧</span><div><b>Spam detection</b><span>Learns from known spam and normal emails.</span></div></div>
+        <div class="tcard"><span class="em">🩺</span><div><b>Medical data</b><span>Helps classify disease patterns.</span><small>Needs careful clinical checking before real use.</small></div></div>
+        <div class="tcard"><span class="em">📈</span><div><b>Finance</b><span>Explores whether prices may move up or down.</span><small>No guarantee of profit.</small></div></div>
+        <div class="tcard"><span class="em">⚙️</span><div><b>Anomaly detection</b><span>Learns normal sensor readings and flags unusual ones.</span></div></div>
+      </div>
+    </div>
+
+    <div class="slide vcenter" data-slide="pros">
+      <div class="two">
+        <div class="ccard pro">
+          <h3>✓ Advantages</h3>
+          <ul>
+            <li>Works well with many features (high-dimensional data).</li>
+            <li>Built on a clear idea: the widest margin.</li>
+            <li>Kernels handle curved patterns.</li>
+            <li>Good on small and medium datasets.</li>
+          </ul>
+        </div>
+        <div class="ccard con">
+          <h3>✗ Disadvantages</h3>
+          <ul>
+            <li>Kernel SVMs can be slow on very large datasets.</li>
+            <li>Sensitive to feature scaling.</li>
+            <li>Kernel and settings may need tuning.</li>
+            <li>Curved models are hard to explain.</li>
+          </ul>
+        </div>
+      </div>
+      <p class="cap">No algorithm is automatically best for every dataset.</p>
+    </div>
+
+    <div class="slide" data-slide="final">
+      <div class="flow">
+        <div class="fstep"><b>1</b><span>Collect data</span><small>hours, classes, results</small></div><i>→</i>
+        <div class="fstep"><b>2</b><span>Features + labels</span><small>numbers + Pass/Fail</small></div><i>→</i>
+        <div class="fstep"><b>3</b><span>Scale + choose kernel</span><small>linear or RBF, C, γ</small></div><i>→</i>
+        <div class="fstep"><b>4</b><span>Train</span><small>find the widest road</small></div><i>→</i>
+        <div class="fstep"><b>5</b><span>Test + predict</span><small>new students</small></div>
+      </div>
+      <div class="mystery">
+        <div>
+          <h3>🔮 Predict a Mystery Student</h3>
+          <label class="msl"><span>Hours studied</span><input type="range" id="mH" min="0" max="10" step="1" value="7"><output id="mHv"></output></label>
+          <label class="msl"><span>Classes attended</span><input type="range" id="mC" min="0" max="10" step="1" value="4"><output id="mCv"></output></label>
+          <div class="mcalc" id="mCalc"></div>
+          <div class="mout" id="mOut"></div>
+        </div>
+        <svg class="mgraph" id="mGraph" viewBox="0 0 230 230" aria-label="Max's road with the mystery student"></svg>
+      </div>
+    </div>
+
+    <!-- Ending -->
+    <div class="slide quizslide" data-slide="quiz">
+      <div class="tag" id="qNum"></div>
+      <h2 id="qText"></h2>
+      <div class="opts" id="qOpts"></div>
+      <p class="qwhy" id="qWhy"></p>
+      <button class="btn go" id="qNext"></button>
+    </div>
+    <div class="slide cover closing" data-slide="closing">
+      <div class="cover-row">
+        <svg class="max" viewBox="0 0 200 250" aria-hidden="true"><use href="#max" width="200" height="250"/></svg>
+        <div class="bubble long">Imagine red balls and blue balls placed on a floor. You want to separate them using a line. Many lines might work, but SVM chooses one with the largest possible gap between the two groups. The balls that influence this gap are called support vectors, and the line is called a hyperplane. If a straight boundary isn't enough, SVM can use kernels to find more complex boundaries. The result is a model that can classify new data.</div>
+      </div>
+      <div class="oneidea" id="oneIdea"><b>The one idea that connects everything</b>SVM doesn't simply try to separate training examples. It tries to learn a boundary that balances separation, margin size, and allowed errors, so it can make useful predictions on unseen data.</div>
+    </div>
+
+    <!-- Bonus -->
+    <div class="slide" data-slide="bonus">
+      <div class="bgrid" id="bGrid">
+        <button class="bcard" data-b="python"><span class="em">🐍</span><b>Python code</b><small>The Iris flower example, command by command</small></button>
+        <button class="bcard" data-b="metrics"><span class="em">📏</span><b>Evaluation metrics</b><small>How do we know our SVM is good?</small></button>
+        <button class="bcard" data-b="compare"><span class="em">⚖️</span><b>SVM vs other algorithms</b><small>How each one learns</small></button>
+      </div>
+
+      <div class="bview" id="bv-python" hidden>
+        <div class="bhead"><button class="btn ghost bback">← All cards</button><h2>🐍 Python: SVM on the Iris flowers</h2></div>
+        <div class="pygrid">
+<pre class="code"><span class="c"># Identify the flower species from 4 measurements</span>
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
+from sklearn.pipeline import make_pipeline
+from sklearn.metrics import accuracy_score, classification_report
+
+<span class="c"># 1. Load the flower dataset</span>
+iris = load_iris()
+X = iris.data
+y = iris.target
+
+<span class="c"># 2. Split into training and testing data</span>
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y)
+
+<span class="c"># 3. Scale features and train an SVM</span>
+model = make_pipeline(
+    StandardScaler(),
+    SVC(kernel="rbf", C=1.0, gamma="scale"))
+model.fit(X_train, y_train)
+
+<span class="c"># 4. Predict on unseen test examples</span>
+y_pred = model.predict(X_test)
+
+<span class="c"># 5. Evaluate performance</span>
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print(classification_report(y_test, y_pred))
+
+<span class="c"># 6. Predict one new flower</span>
+new_flower = [[5.1, 3.5, 1.4, 0.2]]
+prediction = model.predict(new_flower)</pre>
+          <div>
+            <table class="btable">
+              <tr><th>Code</th><th>What it means</th></tr>
+              <tr><td><code>load_iris()</code></td><td>Give me the flower examples</td></tr>
+              <tr><td><code>train_test_split()</code></td><td>Separate practice questions from exam questions</td></tr>
+              <tr><td><code>StandardScaler()</code></td><td>Make feature scales comparable</td></tr>
+              <tr><td><code>SVC()</code></td><td>Create an SVM classifier</td></tr>
+              <tr><td><code>kernel="rbf"</code></td><td>Allow a curved boundary</td></tr>
+              <tr><td><code>C=1.0</code></td><td>Set the penalty strength</td></tr>
+              <tr><td><code>gamma="scale"</code></td><td>Pick gamma automatically from the data</td></tr>
+              <tr><td><code>fit()</code></td><td>Train the model</td></tr>
+              <tr><td><code>predict()</code></td><td>Predict an answer</td></tr>
+              <tr><td><code>accuracy_score()</code></td><td>Fraction of correct predictions</td></tr>
+            </table>
+            <p class="bnote">The pipeline learns scaling only from the training set. That prevents data leakage, where test data sneaks into training.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bview" id="bv-metrics" hidden>
+        <div class="bhead"><button class="btn ghost bback">← All cards</button><h2>📏 How do we know our SVM is good?</h2></div>
+        <div class="acc">Spam test: 90 correct out of 100 emails → Accuracy = 90 / 100 × 100 = <b>90%</b></div>
+        <table class="btable">
+          <tr><th>Metric</th><th>Simple meaning</th></tr>
+          <tr><td><b>Accuracy</b></td><td>How often was the model correct overall?</td></tr>
+          <tr><td><b>Precision</b></td><td>Of emails called spam, how many really were spam?</td></tr>
+          <tr><td><b>Recall</b></td><td>Of all actual spam emails, how many did we catch?</td></tr>
+          <tr><td><b>F1-score</b></td><td>One balanced score combining precision and recall</td></tr>
+          <tr><td><b>Confusion matrix</b></td><td>A table of correct and incorrect classifications</td></tr>
+        </table>
+        <p class="bnote">When one class is rare, like fraud, precision and recall tell you more than accuracy alone. For SVR (predicting numbers), use MAE, RMSE and R².</p>
+      </div>
+
+      <div class="bview" id="bv-compare" hidden>
+        <div class="bhead"><button class="btn ghost bback">← All cards</button><h2>⚖️ SVM vs other algorithms</h2></div>
+        <table class="btable">
+          <tr><th>Algorithm</th><th>How it learns</th></tr>
+          <tr><td><b>Logistic Regression</b></td><td>Learns a straight-line score and turns it into class probabilities</td></tr>
+          <tr><td><b>Decision Tree</b></td><td>Learns a series of yes/no questions</td></tr>
+          <tr><td><b>KNN</b></td><td>Looks at the closest known examples</td></tr>
+          <tr><td><b>SVM</b></td><td>Learns the boundary with the widest margin</td></tr>
+          <tr><td><b>Neural Network</b></td><td>Learns many layers of transformations</td></tr>
+        </table>
+        <p class="bnote">No algorithm is automatically best for every dataset. Linear SVM often works very well for text; tree ensembles can be handier for some tables of data.</p>
       </div>
     </div>
   </section>
 
   <aside class="panel">
-    <div class="tag" id="tag">Level 1 of 4</div>
-    <h1 id="title">Any Road</h1>
+    <div class="tag" id="tag"></div>
+    <h1 id="title"></h1>
     <p class="say" id="say"></p>
 
-    <!-- Intro 1 -->
-    <div class="lvl itext" data-intro="1">
-      <p>Every day, computers sort things into groups.</p>
-      <p>This is called <b class="hl">Classification</b>.</p>
-      <p>Today we'll learn one of the smartest ways to do it: <b class="hl">Support Vector Machine (SVM)</b>.</p>
+    <!-- chapter title cards -->
+    <div class="lvl itext" data-step="title">
+      <p id="tcTeaser"></p>
     </div>
 
-    <!-- Intro 2 -->
-    <div class="lvl itext" data-intro="2">
-      <p>Each dot is one student.</p>
+    <!-- Chapter 1 · Max Learns to See -->
+    <div class="lvl itext" data-step="cover">
+      <p>Max is a friendly robot who just joined our college.</p>
+      <p>His mission: spot students who might need extra help before the exam.</p>
+      <p class="lead">Can a robot predict who will pass?</p>
+    </div>
+
+    <div class="lvl itext" data-step="ml">
+      <p><b class="hl">Traditional programming</b>: we write the rules.</p>
+      <p><b class="hl">Machine Learning</b>: the computer learns the rules from examples.</p>
+    </div>
+
+    <div class="lvl itext" data-step="features">
+      <p class="lead">Max doesn't see students. He sees numbers.</p>
       <p><b class="hl">Features</b> = what we measure (hours studied, classes attended).</p>
       <p><b class="hl">Label</b> = the answer we already know (<b class="pass">Pass</b> or <b class="fail">Fail</b>).</p>
-      <p>The computer learns from labeled examples. This is called <b class="hl">Supervised Learning</b>.</p>
+      <div class="row"><button class="btn ghost" id="replayF">↺ Replay</button></div>
     </div>
 
-    <!-- Intro 3 -->
-    <div class="lvl itext" data-intro="3">
+    <div class="lvl itext" data-step="supervised">
+      <p><b class="hl">Supervised learning</b>: Max learns from examples that already have the right answer.</p>
+      <p><b class="hl">Classification</b> predicts a category: Pass or Fail.</p>
+      <p><b class="hl">Regression</b> predicts a number: exam marks.</p>
+    </div>
+
+    <div class="lvl itext" data-step="svm">
       <p class="lead">SVM finds the best line to separate two groups: the line with the widest gap between them.</p>
       <div class="parts">
         <div class="part" data-part="0"><b class="hl">Support</b><span>→ only a few points hold up (support) the line</span></div>
@@ -321,49 +876,27 @@
         <button class="btn primary" id="revealBtn">Reveal: Support</button>
         <button class="btn ghost" id="replay3">↺ Replay</button>
       </div>
-      <p>Many lines can separate the groups. SVM picks the one with the widest road.</p>
     </div>
 
-    <!-- Intro 4 -->
-    <div class="lvl itext" data-intro="4">
-      <p>You already know the line y = mx + c. SVM writes a line like this:</p>
-      <div class="eq">w₁x₁ + w₂x₂ + b = 0</div>
-      <div class="defs">
-        <div><b>x₁, x₂</b> = features (hours, classes)</div>
-        <div><b>w₁, w₂</b> = weights (how important each feature is)</div>
-        <div><b>b</b> = bias (moves the line)</div>
-      </div>
-      <div class="sliders">
-        <label class="sl"><span>w₁</span><input type="range" id="w1s" min="0" max="4" step="0.5"><output id="w1v"></output></label>
-        <label class="sl"><span>w₂</span><input type="range" id="w2s" min="0" max="4" step="0.5"><output id="w2v"></output></label>
-        <label class="sl"><span>b</span><input type="range" id="bs" min="-30" max="0" step="1"><output id="bv"></output></label>
-      </div>
-      <div class="rule">Result &gt; 0 → <span class="pass">Pass</span> | Result &lt; 0 → <span class="fail">Fail</span>. The sign decides the group.</div>
+    <div class="lvl itext" data-step="hyper">
+      <p>A <b class="hl">hyperplane</b> is the boundary SVM uses to separate groups.</p>
+      <p>1D: a point · 2D: a line · 3D: a plane · 4D+: a hyperplane.</p>
+      <div class="handover" data-next="1">Max can draw many lines… but which one is the best?<small class="hand"></small></div>
     </div>
 
-    <!-- Intro 5 -->
-    <div class="lvl itext" data-intro="5">
-      <div class="eq"><small><b class="hl">Margin</b> (road width) =</small>2 / ‖w‖</div>
-      <p>The points touching the dashed lines are the <b class="hl">Support Vectors</b>.</p>
-      <p>Smaller ‖w‖ means a wider road.</p>
-      <p>SVM's goal: make the road as wide as possible while keeping every point on the correct side.</p>
-      <p class="note">You don't need to solve this by hand. The computer does it. Let's see it in action!</p>
-      <button class="btn go" id="startGame">Start the Game → Level 1</button>
-    </div>
-
-    <!-- Level 1 -->
-    <div class="lvl" data-level="1">
+    <!-- Chapter 2 · Max Finds the Best Road -->
+    <div class="lvl" data-step="l1">
       <button class="question ask" id="ask1">Which line is the best?<small id="ask1hint">Click to reveal</small></button>
       <div class="callout reveal" id="ans1"></div>
       <p class="status" id="s1"></p>
       <div class="row">
         <button class="btn primary" id="others">Show other roads</button>
+        <button class="btn ghost" id="play1">🛝 Playground test</button>
         <button class="btn ghost" data-reset="1">↺ Reset</button>
       </div>
     </div>
 
-    <!-- Level 2 -->
-    <div class="lvl" data-level="2">
+    <div class="lvl" data-step="l2">
       <div class="score">
         <span class="lbl">Road width</span>
         <span class="big" id="w2">0 m</span>
@@ -386,29 +919,61 @@
         </div>
         <div>
           <svg viewBox="0 0 38 22" aria-hidden="true"><circle cx="19" cy="11" r="10" fill="rgba(255,196,0,.4)"/><circle cx="19" cy="11" r="7.5" fill="none" stroke="#f5b400" stroke-width="2.5"/><circle cx="19" cy="11" r="5" fill="#1c62d6" stroke="#fff" stroke-width="1.5"/></svg>
-          <span>Glowing houses = <b>support vectors</b></span>
+          <span>Glowing students = <b>support vectors</b></span>
         </div>
       </div>
     </div>
 
-    <!-- Level 3 -->
-    <div class="lvl" data-level="3">
+    <div class="lvl itext" data-step="math1">
+      <p>You already know the line y = mx + c. SVM writes a line like this:</p>
+      <div class="eq">w₁x₁ + w₂x₂ + b = 0</div>
+      <div class="defs">
+        <div><b>x₁, x₂</b> = features (hours, classes)</div>
+        <div><b>w₁, w₂</b> = weights (how important each feature is)</div>
+        <div><b>b</b> = bias (moves the line)</div>
+      </div>
+      <div class="sliders">
+        <label class="sl"><span>w₁</span><input type="range" id="w1s" min="0" max="4" step="0.5"><output id="w1v"></output></label>
+        <label class="sl"><span>w₂</span><input type="range" id="w2s" min="0" max="4" step="0.5"><output id="w2v"></output></label>
+        <label class="sl"><span>b</span><input type="range" id="bs" min="-30" max="0" step="1"><output id="bv"></output></label>
+      </div>
+      <div class="rule">Result &gt; 0 → <span class="pass">Pass</span> | Result &lt; 0 → <span class="fail">Fail</span>. The sign decides the group.</div>
+    </div>
+
+    <div class="lvl itext" data-step="math2">
+      <div class="eq"><small><b class="hl">Margin</b> (road width) =</small>2 / ‖w‖</div>
+      <p>The points touching the dashed lines are the <b class="hl">Support Vectors</b>.</p>
+      <p>Smaller ‖w‖ means a wider road.</p>
+      <p>SVM's goal: make the road as wide as possible while keeping every point on the correct side.</p>
+      <p class="note">A bigger margin helps, but it doesn't guarantee correct predictions.</p>
+    </div>
+
+    <div class="lvl itext" data-step="deep">
+      <p>The whole SVM idea in one line: a <b>wide road</b> plus a <b>penalty for rule-breakers</b>.</p>
+      <p class="note">Real SVM solves this mathematically. Our animations only show the idea.</p>
+      <div class="row"><button class="btn primary" id="ddBtn">Reveal next</button></div>
+    </div>
+
+    <div class="lvl" data-step="l3">
+      <div class="walk">
+        <button data-c="0" id="soft3"><b>🙂 Soft margin</b>“A small slip is okay.”</button>
+        <button data-c="100" id="hard3"><b>🚫 Hard margin</b>“Nobody in the walkway!”</button>
+      </div>
       <div class="slider">
         <label for="c3"><span style="color:var(--ink);font-size:1.05rem">C (strictness)</span><span id="cval"></span></label>
         <input type="range" id="c3" min="0" max="100" value="0">
-        <div class="ends"><span>Relaxed</span><span>Strict</span></div>
+        <div class="ends"><span>Forgiving</span><span>Strict</span></div>
       </div>
-      <div class="readouts">
+      <div class="readouts with-reset">
         <div><span class="lbl">Road width</span><span class="big" id="w3">0 m</span></div>
-        <div><span class="lbl">Troublemaker</span><span class="mid" id="tm3"></span></div>
+        <div><span class="lbl">Arjun</span><span class="mid" id="tm3"></span></div>
+        <button class="btn ghost icon" data-reset="3" aria-label="Reset" title="Reset">↺</button>
       </div>
-      <div class="row">
-        <button class="btn ghost" data-reset="3">↺ Reset</button>
-      </div>
+      <div class="handover" data-next="2">But what if no straight road works at all?<small class="hand"></small></div>
     </div>
 
-    <!-- Level 4 -->
-    <div class="lvl" data-level="4">
+    <!-- Chapter 3 · Max Faces the Impossible -->
+    <div class="lvl" data-step="l4">
       <p class="kline"><b class="hl">Kernel Trick</b>: add a new feature, like z&nbsp;=&nbsp;x²&nbsp;+&nbsp;y², to lift the points into 3D where a flat plane can separate them.</p>
       <p class="status" id="s4"></p>
       <div class="row">
@@ -416,8 +981,52 @@
       </div>
     </div>
 
-    <!-- Quiz -->
-    <div class="lvl" data-quiz="1">
+    <div class="lvl itext" data-step="kernels">
+      <p>A <b class="hl">kernel</b> decides what shape the boundary can take.</p>
+      <p>Max picks the kernel that fits the pattern: straight, curved, or a flexible shape.</p>
+    </div>
+
+    <div class="lvl" data-step="gamma">
+      <p class="say"><b class="hl">Gamma (γ)</b> sets how far each point's circle of influence reaches (RBF kernel).</p>
+      <div class="slider">
+        <label for="gs"><span style="color:var(--ink);font-size:1.05rem">Gamma (γ)</span><span id="gval"></span></label>
+        <input type="range" id="gs" min="0" max="100" value="50">
+        <div class="ends"><span>Low: wide</span><span>High: narrow</span></div>
+      </div>
+      <p class="status" id="gword"></p>
+      <table class="cg">
+        <tr><th></th><th>C</th><th>Gamma (γ)</th></tr>
+        <tr><td>Controls</td><td>Penalty for breaking rules</td><td>How far influence reaches</td></tr>
+        <tr><td>High</td><td>Less tolerance</td><td>Very local, wiggly</td></tr>
+        <tr><td>Low</td><td>More tolerance</td><td>Smooth, broad</td></tr>
+        <tr><td>Used with</td><td>Soft-margin SVM</td><td>RBF, polynomial, sigmoid (not linear)</td></tr>
+      </table>
+    </div>
+
+    <div class="lvl itext" data-step="fit">
+      <p><b class="hl">Underfitting</b>: too simple, misses the pattern.</p>
+      <p><b class="hl">Overfitting</b>: memorises the training data, fails on new data.</p>
+      <p><b class="hl">Good fit</b>: learns the idea, works on new data.</p>
+    </div>
+
+    <div class="lvl itext" data-step="real">
+      <p>SVM can sort groups, predict numbers, and spot unusual data.</p>
+      <p>It's used in email, medicine, finance and factories, always with care.</p>
+    </div>
+
+    <div class="lvl itext" data-step="pros">
+      <p>Every tool has strengths and weaknesses.</p>
+      <p>Knowing both helps Max choose the right tool for the job.</p>
+    </div>
+
+    <div class="lvl itext" data-step="final">
+      <p>Five steps take Max from data to a prediction.</p>
+      <p>Move the sliders: Max checks which side of his road a new student falls on.</p>
+      <div class="handover" data-next="3">Now let's see what you remember!<small class="hand"></small></div>
+    </div>
+
+    <!-- Ending -->
+    <div class="lvl" data-step="quiz">
       <div class="readouts">
         <div><span class="lbl">Time left</span><span class="big" id="qTimer">2:00</span></div>
         <div><span class="lbl">Score</span><span class="big" id="qScore">0 / 5</span></div>
@@ -425,12 +1034,36 @@
       <div class="qdots" id="qDots"></div>
     </div>
 
-    <div class="key" id="keybox">
-      <div class="key-top"><b>Key idea</b><button class="explain-btn" id="explainBtn" title="Explain more (E)">📖 Explain more</button></div>
-      <p id="key"></p>
+    <div class="lvl itext" data-step="closing">
+      <p>Thank you for joining Max's journey!</p>
+      <div class="row"><button class="btn primary" id="ideaBtn">Show the one idea</button></div>
+      <p class="note">Bonus cards come next, if there's time.</p>
     </div>
+
+    <!-- Bonus -->
+    <div class="lvl itext" data-step="bonus">
+      <p>Want to know more? Open a card if there's time.</p>
+      <p class="note">Each card has a ← button to come back.</p>
+    </div>
+
+    <div class="key" id="keybox"><b>Key idea</b><p id="key"></p></div>
   </aside>
 </main>
+
+<!-- presenter notes (N) -->
+<div class="notes" id="notes" hidden>
+  <h4 id="notesTitle"></h4>
+  <ul id="notesList"></ul>
+</div>
+
+<!-- chapter menu (M) -->
+<div class="menu" id="menu" hidden>
+  <div class="menu-card" role="dialog" aria-label="Chapter menu">
+    <div class="menu-head"><h2>Jump to a chapter</h2><button class="btn ghost" id="menuClose" aria-label="Close menu">✕</button></div>
+    <div class="menu-grid" id="menuGrid"></div>
+    <div class="keys"><kbd>→</kbd> or <kbd>Space</kbd> next · <kbd>←</kbd> back · <kbd>N</kbd> presenter notes · <kbd>M</kbd> this menu · <kbd>F</kbd> full screen</div>
+  </div>
+</div>
 
 <script>
 (() => {
@@ -456,18 +1089,18 @@ const COL = {
 const OTHER_COLORS = ['#7048e8', '#0ca678', '#f76707', '#d6336c', '#1098ad'];
 
 const TEXT = {
-  1: { title: 'Any Road',
-       say: 'Drag the road so the red village is on one side and the blue village is on the other.',
-       key: 'Many different roads can split the two villages. So how do we choose the best one?' },
-  2: { title: 'The Widest Road',
-       say: 'A wider road is a safer road: it leaves the most space between the road and every house.',
-       key: 'SVM finds the widest possible road. Only the houses touching its edges, the support vectors, decide where it goes.' },
+  1: { title: 'Any Road Will Do?',
+       say: "Drag Max's road so the Fail students (red) are on one side and the Pass students (blue) on the other.",
+       key: 'Many roads split the two groups. So which one is the best?' },
+  2: { title: 'Finding the Best Road',
+       say: 'A wider road is safer: it leaves the most space between the road and every student.',
+       key: 'SVM finds the widest road. Only the students touching its edges, the support vectors, decide where it goes.' },
   3: { title: 'The Troublemaker',
-       say: 'One red house was built inside the blue village. How strict should the road be about it?',
-       key: 'C sets how strict SVM is. Low C lets a few houses break the rules to keep the road wide. High C fits every house but squeezes the road.' },
-  4: { title: 'The Impossible Level',
-       say: 'The blue village surrounds the red one, so no straight road can split them, unless we lift the houses up.',
-       key: 'Kernel trick: look at the houses in a new way (give them height) so a flat cut works. Back on the map, that cut becomes a curve.' },
+       say: 'Arjun studied hard but still failed, so his red dot sits among the Pass students.',
+       key: 'Low C = forgiving. High C = strict.' },
+  4: { title: "Max's Playground Puzzle",
+       say: 'Red balls sit in the middle of the playground and blue balls surround them. No straight road works.',
+       key: "Kernel Trick = SVM's superpower: add a new feature so a flat cut works. Back on the map, it becomes a circle." },
 };
 
 /* =========================================================
@@ -683,7 +1316,7 @@ const sliderToC = v => Math.pow(10, Math.log10(C_MIN) + v / 100 * (Math.log10(C_
    ========================================================= */
 function fresh(level) {
   if (level === 1) {
-    return { pts: copyPts(VILLAGES), h: [{ x: 430, y: 330 }, { x: 570, y: 330 }], others: null, best: null };
+    return { pts: copyPts(VILLAGES), h: [{ x: 430, y: 330 }, { x: 570, y: 330 }], others: null, best: null, play: null };
   }
   if (level === 2) {
     const s = { pts: copyPts(VILLAGES), h: [{ x: 430, y: 110 }, { x: 430, y: 530 }], mode: 'user', disp: null, revealed: false, tau: 0.22 };
@@ -855,8 +1488,11 @@ function setText(el, t) { if (shown.get(el) !== t) { shown.set(el, t); el.textCo
 function setCls(el, cls) { if (el.className !== cls) el.className = cls; }
 
 /* =========================================================
-   Level 1: Any Road
+   Level 1: Any Road Will Do?
    ========================================================= */
+// The playground test: three parallel roads, only the middle one is equally far from both groups.
+const PLAY_LINES = [[-0.75, 'Too close to red', COL.red, '#fff'], [0, 'Maximum margin', COL.gold, COL.ink], [0.75, 'Too close to blue', COL.blue, '#fff']];
+
 function draw1(s, now) {
   const { n, c } = lineFromHandles(s.h[0], s.h[1]);
   const cl = classify(s.pts, n, c);
@@ -873,6 +1509,13 @@ function draw1(s, now) {
   if (s.others) for (const r of s.others) inLineFrame(r.n, r.c, () => {
     ctx.strokeStyle = r.color; ctx.lineWidth = 5; ctx.setLineDash([18, 12]); hline(0); ctx.setLineDash([]);
   });
+  if (s.play) {
+    const { n: pn, c: pc, hw } = s.play;
+    inLineFrame(pn, pc, () => { ctx.fillStyle = 'rgba(255,212,59,0.18)'; ctx.fillRect(-2500, -hw, 5000, 2 * hw); });
+    for (const [f, , col] of PLAY_LINES) inLineFrame(pn, pc + f * hw, () => {
+      ctx.strokeStyle = col; ctx.lineWidth = f ? 5 : 7; ctx.setLineDash(f ? [16, 10] : []); hline(0); ctx.setLineDash([]);
+    });
+  }
   if (best) inLineFrame(best.n, best.c, () => {
     ctx.globalAlpha = bu;
     ctx.strokeStyle = 'rgba(23,32,46,0.35)'; ctx.lineWidth = 11; hline(0);
@@ -881,6 +1524,12 @@ function draw1(s, now) {
   drawThinRoad(n, c);
   ctx.restore();
   for (const p of s.pts) drawHouse(p, { wrong: cl.wrong.has(p) });
+  if (s.play) for (const [f, text, bg, fg] of PLAY_LINES) {
+    const seg = clipLine(s.play.n, s.play.c + f * s.play.hw, 0, 0, W, H);
+    if (!seg) continue;
+    const [a, b] = seg[0].y < seg[1].y ? seg : [seg[1], seg[0]], u = f ? 0.9 : 0.07;
+    pill(text, lerp(a.x, b.x, u), lerp(a.y, b.y, u), { bg, fg, size: 18 });
+  }
   if (best) {
     const seg = clipLine(best.n, best.c, 0, 0, W, H);
     if (seg) {
@@ -901,13 +1550,15 @@ function draw1(s, now) {
   drawHandles(s.h, hover);
 
   const k = cl.wrong.size;
-  setText($('s1'), k ? `✗ ${k} house${k > 1 ? 's are' : ' is'} on the wrong side` : '✓ The road splits the two villages!');
-  setCls($('s1'), 'status ' + (k ? 'bad' : 'good'));
+  setText($('s1'), s.play ? 'Best choice: the road is equally far from the nearest red and blue students.'
+    : k ? `✗ ${k} student${k > 1 ? 's are' : ' is'} on the wrong side` : '✓ The road splits the two groups!');
+  setCls($('s1'), 'status ' + (s.play || !k ? 'good' : 'bad'));
+  setText($('play1'), s.play ? 'Hide playground test' : '🛝 Playground test');
   setText($('others'), s.others ? 'Hide other roads' : 'Show other roads');
   setText($('ask1hint'), best ? 'Click to hide' : 'Click to reveal');
   $('ans1').classList.toggle('on', !!best);
   if (best) {
-    let ans = '★ The best line leaves the biggest gap to the closest houses on both sides.';
+    let ans = '★ The best line leaves the biggest gap to the closest students on both sides.';
     if (s.others) {
       const gap = s.others.map(r => Math.min(...s.pts.map(p => Math.abs(r.n.x * p.x + r.n.y * p.y - r.c))));
       ans += ` Of roads A–E, road ${s.others[gap.indexOf(Math.max(...gap))].label} comes closest.`;
@@ -935,7 +1586,7 @@ function draw2(s, now, dt) {
     for (const p of s.pts) drawHouse(p, { wrong: cl.wrong.has(p) });
     drawHandles(s.h, hover);
     setText($('hint2'), ok ? 'Drag the white handles. Can you make the road wider?'
-                           : 'Some houses are on the wrong side, so there is no road. Move it!');
+                           : 'Some students are on the wrong side, so there is no road. Move it!');
   } else {
     const tgt = roadTarget(s.svm.n, s.svm.c, s.svm.hw);
     s.disp = approach(s.disp, tgt, 1 - Math.exp(-dt / s.tau));
@@ -953,8 +1604,8 @@ function draw2(s, now, dt) {
       drawHouse(p, { glow: s.revealed && Math.abs(yf - 1) < 0.03, wrong: yf < 0 });
     }
     setText($('hint2'), !s.revealed ? 'SVM is building the widest road…'
-      : crossed ? 'Houses crossed over: no clean road exists!'
-      : 'Drag a far-away house: nothing changes. Now drag a glowing one!');
+      : crossed ? 'Students crossed over: no clean road exists!'
+      : 'Drag a far-away student: nothing changes. Now drag a glowing one!');
   }
   setText($('w2'), fmt(width));
   const scale = 2 * s.svm.hw * 1.1 || 1;
@@ -982,22 +1633,25 @@ function draw3(s, now, dt) {
   const tm = s.pts.find(p => p.tm);
   for (const p of s.pts) if (!p.tm) drawHouse(p, { wrong: s.svm.f(p) * p.c < 0 });
   drawHouse(tm, { wrong: s.svm.f(tm) * tm.c < 0 });
-  pill('troublemaker', tm.x, tm.y - 38, { size: 17 });
+  pill('Arjun · troublemaker', tm.x, tm.y - 38, { size: 17 });
 
   setText($('w3'), fmt(2 * L.hw));
   const C = s.C;
   setText($('cval'), `C = ${C < 1 ? C.toFixed(2) : C < 10 ? C.toFixed(1) : C.toFixed(0)}`);
   const yf = s.svm.f(tm) * tm.c;
   const el = $('tm3');
-  if (yf >= 0.98) { setText(el, 'Fits ✓ The road squeezes past it'); setCls(el, 'mid good'); }
-  else if (yf >= 0) { setText(el, 'Sitting on the road ⚠'); setCls(el, 'mid warn'); }
-  else { setText(el, 'Ignored (it is on the wrong side)'); setCls(el, 'mid'); }
+  if (yf >= 0.98) { setText(el, 'Fits ✓ The road squeezes past him'); setCls(el, 'mid good'); }
+  else if (yf >= 0) { setText(el, 'Inside the road ⚠'); setCls(el, 'mid warn'); }
+  else { setText(el, 'Forgiven: allowed on the wrong side'); setCls(el, 'mid'); }
+  $('soft3').classList.toggle('on', s.slider <= 33);
+  $('hard3').classList.toggle('on', s.slider >= 67);
 }
 
 /* =========================================================
    Level 4: The Impossible Level (kernel trick)
    ========================================================= */
 const TILT = 38 * Math.PI / 180;
+const Z_SCALE = 240;   // z = (x² + y²) / 240 keeps the tallest ball on screen
 
 function view3(s, now, dt) {
   let V;
@@ -1046,9 +1700,9 @@ function draw3D(s, V) {
   ctx.restore();
 
   // houses: height = distance from the centre
-  const zc = s.rCut * V.lift;
+  const zc = s.rCut ** 2 / Z_SCALE * V.lift;
   const items = s.pts.map(p => {
-    const z = Math.hypot(p.x - CX, p.y - CY) * V.lift;
+    const z = ((p.x - CX) ** 2 + (p.y - CY) ** 2) / Z_SCALE * V.lift;     // z = x² + y² (scaled to fit)
     return { p, z, base: proj(p.x, p.y, 0), top: proj(p.x, p.y, z) };
   });
   const below = items.filter(i => i.z <= zc).sort((a, b) => a.top.d - b.top.d);
@@ -1081,7 +1735,7 @@ function draw3D(s, V) {
   if (V.tilt > 0.4) {
     ctx.save(); ctx.globalAlpha = clamp01((V.tilt - 0.4) / 0.4);
     pill('✨ Kernel Trick', 26, 38, { bg: COL.gold, fg: COL.ink, size: 22, align: 'left' });
-    caption('height = distance from the center', 30, 82);
+    caption('new feature: height z = x² + y²', 30, 82);
     if (s.phase === 'lifted') caption('drag to spin', 30, 112, 16);
     ctx.restore();
   }
@@ -1111,7 +1765,7 @@ function drawRing(s, now) {
     drawHouse(p, { glow: a >= 1 && touching });
   }
   pill('✨ Kernel Trick', 26, 38, { bg: COL.gold, fg: COL.ink, size: 22, align: 'left' });
-  caption('the flat cut becomes a circle on the map', 30, 82);
+  caption('the flat cut becomes a circle on the playground', 30, 82);
 }
 
 function draw4(s, now, dt) {
@@ -1123,18 +1777,18 @@ function draw4(s, now, dt) {
     ctx.save(); clipMap(); drawTint(n, c, cl.orient); drawThinRoad(n, c); ctx.restore();
     for (const p of s.pts) drawHouse(p, { wrong: cl.wrong.has(p) });
     drawHandles(s.h, hover);
-    setText(st, `✗ ${cl.wrong.size} houses on the wrong side. No straight road works!`);
+    setText(st, `✗ ${cl.wrong.size} balls on the wrong side. No straight road works!`);
     setCls(st, 'status bad');
   } else if (s.phase === 'ring') {
     drawRing(s, now);
-    setText(st, '✓ Back on the map, the flat cut is a circle: a ring road!');
+    setText(st, '✓ Back on the playground, the flat cut is a circle!');
     setCls(st, 'status good');
   } else {
     draw3D(s, view3(s, now, dt));
     if (s.phase === 'ring') return;   // just finished dropping; draw the ring next frame
-    setText(st, { lifting: 'Lifting: the farther a house is from the center, the higher it goes…',
-                  lifted: '✓ Red houses stay low, blue houses rise high: a flat sheet now splits them!',
-                  dropping: 'Bringing the houses back down…' }[s.phase]);
+    setText(st, { lifting: 'Lifting: each ball rises to height z = x² + y²…',
+                  lifted: '✓ Red balls stay low, blue balls rise high: a flat plane now splits them!',
+                  dropping: 'Bringing the balls back down…' }[s.phase]);
     setCls(st, 'status ' + (s.phase === 'lifted' ? 'good' : ''));
   }
   setText(btn, { flat: '⬆ Lift to 3D', lifting: '⬆ Lifting…', lifted: '⬇ Back to the map', dropping: '⬇ Landing…', ring: '↺ Replay' }[s.phase]);
@@ -1142,17 +1796,14 @@ function draw4(s, now, dt) {
 }
 
 /* =========================================================
-   Intro: will a student PASS or FAIL? (5 screens)
+   Max's students: will they PASS or FAIL? (graph screens)
    ========================================================= */
-const PASS_COL = '#2f9e44', FAIL_COL = COL.red;
-const EMOJI_FONT = '"Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif';
-const INTRO_TITLES = { 1: 'Can a Computer Decide?', 2: 'Students as Dots', 3: 'What is SVM?',
-                       4: 'The Math: A Line That Decides', 5: 'The Math: The Widest Road' };
+const PASS_COL = COL.blue, FAIL_COL = COL.red;
 
 // One example all the way through: hours studied (x₁), classes attended (x₂), passed?
 const GRAPH = { x0: 150, x1: 650, y0: 40, y1: 540 };          // 0–10 on both axes, 50 map units per step
 const STUDENTS = [
-  ['Riya', 6, 8, true], ['Aditya', 5, 7, true], ['Meera', 7, 5, true], ['Arjun', 8, 9, true], ['Priya', 7, 7, true],
+  ['Riya', 6, 8, true], ['Aditya', 5, 7, true], ['Meera', 7, 5, true], ['Rahul', 8, 9, true], ['Priya', 7, 7, true],
   ['Kabir', 9, 6, true], ['Ananya', 5, 9, true], ['Rohan', 9, 4, true], ['Vikram', 9, 9, true], ['Isha', 10, 7, true],
   ['Aarav', 4, 4, false], ['Sara', 2, 3, false], ['Dev', 3, 4, false], ['Tara', 1, 6, false], ['Neel', 4, 2, false],
   ['Zoya', 2, 1, false], ['Diya', 1, 3, false], ['Yash', 5, 1, false], ['Nisha', 2, 5, false], ['Kiran', 3, 2, false],
@@ -1165,7 +1816,7 @@ const MANY_LINES = otherRoads(STUDENT_PTS).filter((_, i) => i !== 2);
 function freshIntro() {
   return { t0: 0, hover: -1, pin: -1, sel: 0, w1: 2, w2: 1, b: -15, parts: 0 };   // sel 0 = Riya
 }
-let IS = freshIntro(), intro = 0;
+let IS = freshIntro();
 
 const fmtNum = v => (Number.isInteger(v) ? String(v) : v.toFixed(1));
 const signed = v => (v > 0 ? '+' : v < 0 ? '−' : '') + fmtNum(Math.abs(v));
@@ -1233,7 +1884,7 @@ function drawGraphRoad(a, grow = 1) {
   const { n, c, hw } = ISVM, w = hw * grow;
   ctx.save(); clipGraph(); ctx.globalAlpha = a;
   inLineFrame(n, c, () => {
-    ctx.fillStyle = 'rgba(47,158,68,0.10)'; ctx.fillRect(-3000, 0, 6000, 3000);
+    ctx.fillStyle = 'rgba(28,98,214,0.08)'; ctx.fillRect(-3000, 0, 6000, 3000);
     ctx.fillStyle = 'rgba(224,49,49,0.08)'; ctx.fillRect(-3000, -3000, 6000, 3000);
     ctx.fillStyle = 'rgba(245,180,0,0.24)'; ctx.fillRect(-2500, -w, 5000, 2 * w);
     ctx.strokeStyle = '#b07d00'; ctx.lineWidth = 3; ctx.setLineDash([12, 9]); hline(-w); hline(w); ctx.setLineDash([]);
@@ -1254,58 +1905,61 @@ function arrow(a, b) {
   }
 }
 
-/* ---------- screen 1: Can a computer decide? ---------- */
-const CARDS = [
-  { title: 'Email', icon: '📧', q: 'Spam or Not Spam?', chips: [['Spam', FAIL_COL], ['Not Spam', PASS_COL]] },
-  { title: 'Photo', icon: '🖼️', q: 'Cat or Dog?', chips: [['🐱 Cat', '#7048e8'], ['🐶 Dog', '#1098ad']] },
-  { title: 'Student', icon: '🧑‍🎓', q: 'Pass or Fail?', chips: [['Pass', PASS_COL], ['Fail', FAIL_COL]], today: true },
-];
+/* ---------- Chapter 1: features and labels (a table turns into dots) ---------- */
+const TABLE = [0, 10, 6, 15, 5, 13];              // Riya, Aarav, Ananya, Zoya, Kabir, Tara
+const ROW_T = k => 600 + k * 650;                 // when table row k flies onto the graph
+const REST = STUDENTS.map((_, i) => i).filter(i => !TABLE.includes(i));
+const REST_T = j => ROW_T(TABLE.length) + 200 + j * 70;
 
-function drawIntro1(s, now) {
-  const t = now - s.t0;
-  drawMapBg();
-  CARDS.forEach((card, i) => {
-    const u = ease(clamp01((t - 150 - i * 300) / 600));
-    if (u <= 0) return;
-    const cx = 190 + i * 310, cy = 320 + (1 - u) * 40;
-    ctx.save();
-    ctx.globalAlpha = u;
-    ctx.save();
-    ctx.shadowColor = 'rgba(23,32,46,0.16)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 6;
-    rr(cx - 135, cy - 200, 270, 400, 22); ctx.fillStyle = '#fff'; ctx.fill();
-    ctx.restore();
-    if (card.today) { ctx.strokeStyle = COL.gold; ctx.lineWidth = 5; ctx.stroke(); }
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.font = `800 26px ${FONT}`; ctx.fillStyle = COL.ink; ctx.fillText(card.title, cx, cy - 152);
-    ctx.font = `96px ${EMOJI_FONT}`; ctx.fillText(card.icon, cx, cy - 58);
-    ctx.font = `800 34px ${FONT}`; ctx.fillStyle = '#9aa1ad'; ctx.fillText('↓', cx, cy + 30);
-    ctx.font = `800 25px ${FONT}`; ctx.fillStyle = COL.ink; ctx.fillText(card.q, cx, cy + 82);
-    ctx.font = `800 18px ${FONT}`;
-    const widths = card.chips.map(([txt]) => ctx.measureText(txt).width + 18 * 1.2);
-    let x = cx - (widths[0] + widths[1] + 12) / 2;
-    card.chips.forEach(([txt, col], k) => {
-      pill(txt, x + widths[k] / 2, cy + 142, { bg: col, size: 18 });
-      x += widths[k] + 12;
-    });
-    if (card.today) pill("Today's example", cx, cy - 200, { bg: COL.gold, fg: COL.ink, size: 17 });
-    ctx.restore();
-  });
-}
-
-/* ---------- screen 2: students as dots ---------- */
-function drawIntro2(s, now) {
-  const t = now - s.t0;
+function drawFeatures(s, now) {
+  const t = now - s.t0, X = 684, Y = 34, RH = 36, chipX = X + 260;
+  const rowY = k => Y + RH * (k + 1.5) + 4;
   drawMapBg();
   drawAxes();
-  drawPassFailKey();
-  caption('Hover over a dot', 686, 160, 18);
-  caption('to meet the student', 686, 186, 18);
-  STUDENTS.forEach((st, i) => {
-    const u = clamp01((t - 250 - i * 70) / 320);
-    if (u <= 0) return;
-    const pop = u < 1 ? Math.sin(u * Math.PI / 2) + 0.25 * Math.sin(u * Math.PI) : 1;
-    drawStudent(st, { r: HOUSE_R * pop, ring: s.hover === i || s.pin === i ? COL.ink : null });
+
+  // the table Max is given
+  rr(X, Y, 300, RH * (TABLE.length + 1) + 10, 14);
+  ctx.fillStyle = 'rgba(255,255,255,0.96)'; ctx.fill();
+  ctx.strokeStyle = COL.mapEdge; ctx.lineWidth = 2; ctx.stroke();
+  ctx.textBaseline = 'middle';
+  ctx.font = `800 15px ${FONT}`; ctx.fillStyle = '#4a5466';
+  ctx.textAlign = 'left'; ctx.fillText('Student', X + 14, Y + RH / 2 + 4);
+  ctx.textAlign = 'center';
+  ctx.fillText('Hours', X + 124, Y + RH / 2 + 4);
+  ctx.fillText('Classes', X + 190, Y + RH / 2 + 4);
+  ctx.fillText('Result', chipX, Y + RH / 2 + 4);
+  TABLE.forEach((idx, k) => {
+    const st = STUDENTS[idx], y = rowY(k);
+    if (t > ROW_T(k) - 200 && t < ROW_T(k) + 700) {
+      rr(X + 5, y - RH / 2 + 2, 290, RH - 4, 8); ctx.fillStyle = '#fff3c4'; ctx.fill();
+    }
+    ctx.font = `700 17px ${FONT}`; ctx.fillStyle = COL.ink; ctx.textBaseline = 'middle';
+    ctx.textAlign = 'left'; ctx.fillText(st.name, X + 14, y);
+    ctx.textAlign = 'center'; ctx.fillText(String(st.h), X + 124, y); ctx.fillText(String(st.c), X + 190, y);
+    pill(st.pass ? 'Pass' : 'Fail', chipX, y, { bg: st.pass ? PASS_COL : FAIL_COL, size: 14 });
   });
+
+  // each row flies onto the graph and becomes a dot
+  TABLE.forEach((idx, k) => {
+    const u = clamp01((t - ROW_T(k)) / 650);
+    if (u <= 0 || u >= 1) return;
+    const st = STUDENTS[idx], e = ease(u);
+    drawStudent({ pass: st.pass, x: lerp(chipX, st.x, e), y: lerp(rowY(k), st.y, e) - Math.sin(Math.PI * e) * 70 },
+                { r: HOUSE_R * lerp(0.8, 1, e) });
+  });
+  STUDENTS.forEach((st, i) => {
+    const k = TABLE.indexOf(i), at = k >= 0 ? ROW_T(k) + 650 : REST_T(REST.indexOf(i));
+    const u = clamp01((t - at) / 280);
+    if (u <= 0) return;
+    const r = k >= 0 ? HOUSE_R * (1 + 0.3 * Math.sin(Math.PI * u))
+                     : HOUSE_R * (u < 1 ? Math.sin(u * Math.PI / 2) + 0.25 * Math.sin(u * Math.PI) : 1);
+    drawStudent(st, { r, ring: s.hover === i || s.pin === i ? COL.ink : null });
+  });
+
+  const keyY = Y + RH * (TABLE.length + 1) + 44;
+  drawPassFailKey(X, keyY);
+  caption('Hover over a dot', X + 2, keyY + 118, 18);
+  caption('to meet the student', X + 2, keyY + 144, 18);
   const k = s.pin >= 0 ? s.pin : s.hover;
   if (k >= 0) {
     const st = STUDENTS[k], text = `${st.name}: ${st.h} hrs, ${st.c} classes → ${st.pass ? 'Pass' : 'Fail'}`;
@@ -1362,7 +2016,7 @@ function drawIntro4(s, now) {
   if (L) {
     ctx.save(); clipGraph();
     inLineFrame(L.n, L.c, () => {
-      ctx.fillStyle = 'rgba(47,158,68,0.12)'; ctx.fillRect(-3000, 0, 6000, 3000);
+      ctx.fillStyle = 'rgba(28,98,214,0.10)'; ctx.fillRect(-3000, 0, 6000, 3000);
       ctx.fillStyle = 'rgba(224,49,49,0.09)'; ctx.fillRect(-3000, -3000, 6000, 3000);
       ctx.strokeStyle = COL.ink; ctx.lineWidth = 5; hline(0);
     });
@@ -1448,9 +2102,8 @@ function drawIntro5(s, now) {
   ctx.restore();
 }
 
-const INTRO_DRAW = { 1: drawIntro1, 2: drawIntro2, 3: drawIntro3, 4: drawIntro4, 5: drawIntro5 };
 
-/* ---------- intro pointer handling: hover (screen 2) and click (screens 2, 4) ---------- */
+/* ---------- graph screens: hover (features) and click (features, maths) ---------- */
 function nearestStudent(p) {
   let k = -1, best = 24;
   STUDENTS.forEach((st, i) => { const d = Math.hypot(st.x - p.x, st.y - p.y); if (d < best) { best = d; k = i; } });
@@ -1458,88 +2111,37 @@ function nearestStudent(p) {
 }
 function introDown(e) {
   const k = nearestStudent(toWorld(e));
-  if (intro === 2) IS.pin = k === IS.pin ? -1 : k;
-  if (intro === 4 && k >= 0) IS.sel = k;
+  if (cur.id === 'features') IS.pin = k === IS.pin ? -1 : k;
+  if (cur.id === 'math1' && k >= 0) IS.sel = k;
 }
 function introMove(e) {
-  const k = intro === 2 || intro === 4 ? nearestStudent(toWorld(e)) : -1;
+  const k = cur.id === 'features' || cur.id === 'math1' ? nearestStudent(toWorld(e)) : -1;
   IS.hover = k;
   canvas.style.cursor = k >= 0 ? 'pointer' : 'default';
-}
-
-/* =========================================================
-   "Explain more" notes for every screen
-   ========================================================= */
-const EXPLAIN = {
-  1: { title: 'Level 1: Any road', points: [
-    `The two villages are two groups of data points. A straight road between them is a dividing line.`,
-    `Lots of roads keep every house on its own side, so on these houses they all "work".`,
-    `But a road that passes very close to some houses is risky: a new house built nearby could easily end up on the wrong side.`,
-    `The safest road stays as far as possible from the houses on <b>both</b> sides. Click <b>Which line is the best?</b> to see it.`,
-  ] },
-  2: { title: 'Level 2: The widest road', points: [
-    `<b>Road center = decision boundary</b>: the line that decides red or blue.`,
-    `<b>Road width = margin</b>: the empty space between the villages. SVM makes it as wide as possible.`,
-    `<b>Glowing houses = support vectors</b>: the houses touching the road edges. Only they decide where the road goes, so moving a far-away house changes nothing.`,
-    `Why 2 or 3 glowing houses? A straight road needs its tilt, its position and its width fixed. Two houses on one edge lock the tilt, and one house on the other edge locks the width.`,
-    `Finding it by hand: wrap each village in a rubber band, find the two closest points of the two bands, and draw the line that cuts that gap in half at a right angle.`,
-  ], math: `Give red houses y = −1 and blue houses y = +1. A line is <code>w·x + b = 0</code>, and the road width is <code>2 / ‖w‖</code>.<br>
-    SVM makes <code>‖w‖</code> as small as possible while every house stays off the road: <code>y·(w·x + b) ≥ 1</code>.<br>
-    The answer uses only the support vectors: <code>w = Σ αᵢ yᵢ xᵢ</code>, with αᵢ = 0 for every other house.` },
-  3: { title: 'Level 3: The troublemaker', points: [
-    `Real data is messy. Sometimes one house sits in the wrong village, because of a mistake or because it is just unusual.`,
-    `<b>C (strictness)</b> tells SVM how much every single house matters.`,
-    `<b>Low C (relaxed)</b>: a few houses may sit on the road or on the wrong side, and the road stays wide. This usually works better for new houses.`,
-    `<b>High C (strict)</b>: the road squeezes around every house, even the troublemaker. It becomes narrow and tilted: perfect for this map, but often wrong for new houses. This is called <b>overfitting</b>.`,
-    `Picking C is a balance: not too relaxed, not too strict.`,
-  ], math: `Each house gets a "rule-breaking" amount ξᵢ ≥ 0. SVM now minimizes <code>½‖w‖² + C·Σξᵢ</code> while <code>y·(w·x + b) ≥ 1 − ξᵢ</code>.<br>
-    Big C makes breaking the rules expensive (narrow road). Small C makes it cheap (wide road).` },
-  4: { title: 'Level 4: The impossible level', points: [
-    `Here the blue village surrounds the red one, so no straight road can split them.`,
-    `The trick: give every house a new measurement, its <b>height = distance from the center</b>. Red houses are near the center, so they stay low. Blue houses are far away, so they rise high.`,
-    `In 3D, a flat sheet now separates the low houses from the high ones.`,
-    `Back on the map, the place where the sheet cuts becomes a <b>circle</b>: a curved boundary, the ring road.`,
-    `This is the <b>kernel trick</b>: look at the data in a new way, so straight-line math can make curved boundaries.`,
-  ], math: `SVM only needs the dot products <code>x·x′</code> between houses. The kernel trick swaps them for a kernel <code>K(x, x′)</code>, which acts like a dot product in the new space without ever building that space.<br>
-    A popular choice is the RBF kernel: <code>K(x, x′) = exp(−γ‖x − x′‖²)</code>.` },
-};
-
-function openExplain(on) {
-  const e = EXPLAIN[STEPS[step]];
-  if (on && !e) return;
-  if (on) {
-    $('exTitle').textContent = e.title;
-    $('exList').innerHTML = e.points.map(p => `<li>${p}</li>`).join('');
-    $('exMath').innerHTML = e.math ? `<b>For the curious: the math</b>${e.math}` : '';
-    $('exMath').hidden = !e.math;
-  }
-  $('explainBox').hidden = !on;
-  $('explainBtn').textContent = on ? '✕ Close notes' : '📖 Explain more';
 }
 
 /* =========================================================
    Quick quiz: 5 questions in 2 minutes
    ========================================================= */
 const QUIZ = [
-  { q: 'In our student example, what are the features?',
-    opts: ['Pass or Fail', 'Hours studied and classes attended', "The students' names", 'The colour of the dots'], a: 1,
-    why: 'Features are what we measure. Pass or Fail is the label.' },
-  { q: 'Which line does SVM choose?',
-    opts: ['Any line that separates the groups', 'The line closest to the points', 'The line with the widest gap (margin)', 'A line through the middle of the graph'], a: 2,
-    why: 'SVM builds the widest road: the biggest margin between the two groups.' },
+  { q: 'What does SVM try to maximize in classification?',
+    opts: ['The number of features', 'The margin', 'The number of errors'], a: 1,
+    why: 'SVM looks for the widest safety gap between the groups: the largest margin.' },
   { q: 'What are support vectors?',
-    opts: ['The points touching the edges of the road', 'All the points in the data', 'The points farthest from the road', 'The points on the wrong side'], a: 0,
-    why: 'Only the points touching the road edges decide where the road goes.' },
-  { q: 'What happens to the road when C is very high (very strict)?',
-    opts: ['It gets wider', 'It becomes a circle', 'It gets narrow, to fit every single point', 'It disappears'], a: 2,
-    why: 'A strict SVM squeezes past every point, even the troublemaker. That can be overfitting.' },
-  { q: 'No straight line can separate the groups. What does SVM use?',
-    opts: ['A higher C', 'Fewer points', 'A wider road', 'The kernel trick'], a: 3,
-    why: 'The kernel trick adds a new feature, so a flat cut in 3D becomes a curve on the map.' },
+    opts: ['The closest influential training points', 'All points in a dataset', 'A type of graph'], a: 0,
+    why: 'They are the training points closest to the boundary, and they decide where it goes.' },
+  { q: 'What is a kernel used for?',
+    opts: ['Deleting noisy data', 'Increasing accuracy to 100%', 'Learning nonlinear boundaries'], a: 2,
+    why: 'Kernels let SVM learn curved, nonlinear boundaries, like the circle on the playground.' },
+  { q: 'What happens with a very high C?',
+    opts: ['Violations become more costly', 'The model becomes more forgiving', 'The dataset becomes bigger'], a: 0,
+    why: 'High C punishes breaking the rules more, so SVM becomes strict.' },
+  { q: 'What does SVR predict?',
+    opts: ['Only two classes', 'Numerical values', 'Only flower names'], a: 1,
+    why: 'SVR is the regression version of SVM: it predicts numbers, like exam marks.' },
 ];
 const QUIZ_SECONDS = 120;
 const QZ = { i: 0, picks: [], t0: 0, tEnd: 0 };   // current question, answers given, timer start/end
-let quiz = false;
 
 function renderQuiz() {
   const done = QZ.i >= QUIZ.length;
@@ -1552,8 +2154,8 @@ function renderQuiz() {
       const ok = QZ.picks[k] === q.a;
       return `<div><b class="${ok ? 'good' : 'bad'}">${ok ? '✓' : '✗'}</b><span>${q.q}<small>${q.opts[q.a]}</small></span></div>`;
     }).join('');
-    $('qWhy').textContent = right === QUIZ.length ? 'Perfect! You are SVM experts. 🎉'
-      : right >= 3 ? 'Great job! You know how to build the widest road.' : 'Good try! Remember: SVM builds the widest road.';
+    $('qWhy').textContent = right === QUIZ.length ? 'Perfect! Max is proud of you. 🎉'
+      : right >= 3 ? 'Great job! You know how Max builds the widest road.' : 'Good try! Remember: SVM builds the widest road.';
     $('qNext').textContent = '↺ Try again';
     $('qNext').hidden = false;
   } else {
@@ -1572,7 +2174,7 @@ function renderQuiz() {
   $('qScore').textContent = `${right} / ${QUIZ.length}`;
   $('qDots').innerHTML = QUIZ.map((q, k) =>
     `<i class="${QZ.picks[k] == null ? (k === QZ.i ? 'now' : '') : QZ.picks[k] === q.a ? 'ok' : 'no'}"></i>`).join('');
-  $('next').textContent = done ? 'Start Over ↺' : 'Next →';
+  $('next').textContent = done && step === STEPS.length - 1 ? 'Start Over ↺' : 'Next →';
   $('next').disabled = !done && QZ.picks[QZ.i] == null;
 }
 function quizAnswer(k) {
@@ -1592,6 +2194,130 @@ function updateTimer(now) {
 }
 
 /* =========================================================
+   Chapter 2 deep dive: reveal the formula's meaning one part at a time
+   ========================================================= */
+const DD = { k: 0 };
+const DD_PARTS = [[0], [1, 2], [1], [2, 3]];          // formula parts to highlight for each bullet
+function renderDeep() {
+  document.querySelectorAll('.dd li').forEach((el, i) => el.classList.toggle('on', i < DD.k));
+  const lit = DD.k ? DD_PARTS[DD.k - 1] : [];
+  document.querySelectorAll('.fp').forEach(el => el.classList.toggle('on', lit.includes(+el.dataset.p)));
+  $('ddBtn').hidden = DD.k >= 4;
+  $('ddBtn').textContent = `Reveal next (${DD.k + 1} of 4)`;
+}
+
+/* =========================================================
+   Chapter 3: gamma, the circle of influence (conceptual picture)
+   ========================================================= */
+const GAMMA_PTS = ringVillages().filter((p, i) => (p.c === RED ? i % 2 === 0 : i % 2 === 1));
+const GAMMA_MIN = 0.15, GAMMA_MAX = 20;
+const sliderToGamma = v => Math.pow(10, Math.log10(GAMMA_MIN) + v / 100 * (Math.log10(GAMMA_MAX) - Math.log10(GAMMA_MIN)));
+const GM = { slider: 50, gamma: sliderToGamma(50), drawnFor: -1 };
+const gField = document.createElement('canvas');
+gField.width = 125; gField.height = 80;
+
+// Colour each patch by the sign of Σ yᵢ·exp(−γ·d²): every point pulls nearby space towards its own colour.
+function gammaField() {
+  if (GM.drawnFor === GM.gamma) return;
+  const g = gField.getContext('2d'), img = g.createImageData(125, 80);
+  for (let j = 0; j < 80; j++) for (let i = 0; i < 125; i++) {
+    const x = (i + 0.5) * 8, y = (j + 0.5) * 8;
+    let f = 0;
+    for (const p of GAMMA_PTS) f += p.c * Math.exp(-GM.gamma * ((x - p.x) ** 2 + (y - p.y) ** 2) / 10000);
+    const k = (j * 125 + i) * 4, rgb = f > 0 ? [28, 98, 214] : [224, 49, 49];
+    img.data.set([...rgb, Math.round(Math.abs(Math.tanh(f * 1.6)) * 0.5 * 255)], k);
+  }
+  g.putImageData(img, 0, 0);
+  GM.drawnFor = GM.gamma;
+}
+
+function drawGamma() {
+  gammaField();
+  drawMapBg();
+  ctx.save(); clipMap();
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(gField, 0, 0, W, H);
+  const R = Math.min(700, 100 / Math.sqrt(GM.gamma));
+  ctx.lineWidth = 2; ctx.setLineDash([8, 7]);
+  for (const p of GAMMA_PTS) {
+    circle(p.x, p.y, R);
+    ctx.strokeStyle = p.c === RED ? 'rgba(224,49,49,0.45)' : 'rgba(28,98,214,0.45)'; ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  ctx.restore();
+  for (const p of GAMMA_PTS) drawHouse(p);
+  pill('Conceptual illustration', 26, 38, { bg: 'rgba(23,32,46,0.78)', size: 16, align: 'left' });
+  setText($('gval'), `γ = ${GM.gamma < 1 ? GM.gamma.toFixed(2) : GM.gamma.toFixed(1)}`);
+  setText($('gword'), GM.gamma < 0.6 ? 'Low γ: wide influence, smooth boundary'
+    : GM.gamma < 4 ? 'Medium γ: a balance of detail and smoothness' : 'High γ: narrow influence, very wiggly');
+}
+
+/* =========================================================
+   Chapter 3: real world tabs, and the mystery student
+   ========================================================= */
+const RW = { tab: 'types' };
+function setTab(tab) {
+  RW.tab = tab;
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  document.querySelectorAll('[data-pane]').forEach(el => { el.hidden = el.dataset.pane !== tab; });
+}
+
+// Max's learned road for the students, in hours/classes units: w₁·hours + w₂·classes + b
+const MW = [ISVM.n.x * 50 / ISVM.hw, -ISVM.n.y * 50 / ISVM.hw, ISVM.f({ x: GRAPH.x0, y: GRAPH.y1 })];
+const round2 = v => String(Math.round(v * 100) / 100);
+const MINI = (x, y) => [20 + (x - GRAPH.x0) * 0.38, 20 + (y - GRAPH.y0) * 0.38];   // graph → mini SVG
+
+function buildMysteryGraph() {
+  const { n, c, hw } = ISVM, d = { x: n.y, y: -n.x };
+  const end = (k, t) => MINI(n.x * k + d.x * t, n.y * k + d.y * t).join(',');
+  const line = (k, extra) => `<line x1="${end(k, -2000).split(',')[0]}" y1="${end(k, -2000).split(',')[1]}" x2="${end(k, 2000).split(',')[0]}" y2="${end(k, 2000).split(',')[1]}" ${extra}/>`;
+  const dots = STUDENTS.map(st => { const [x, y] = MINI(st.x, st.y); return `<circle cx="${x}" cy="${y}" r="4.5" fill="${st.pass ? PASS_COL : FAIL_COL}" stroke="#fff" stroke-width="1.5"/>`; }).join('');
+  $('mGraph').innerHTML =
+    `<defs><clipPath id="mclip"><rect x="20" y="20" width="190" height="190"/></clipPath></defs>
+     <rect x="20" y="20" width="190" height="190" fill="#e8efe0"/>
+     <g clip-path="url(#mclip)">
+       <polygon points="${end(c - hw, -2000)} ${end(c - hw, 2000)} ${end(c + hw, 2000)} ${end(c + hw, -2000)}" fill="rgba(245,180,0,0.28)"/>
+       ${line(c - hw, 'stroke="#b07d00" stroke-width="2" stroke-dasharray="6 5"')}
+       ${line(c + hw, 'stroke="#b07d00" stroke-width="2" stroke-dasharray="6 5"')}
+       ${line(c, 'stroke="#17202e" stroke-width="3"')}
+     </g>
+     <path d="M20 20 V210 H210" fill="none" stroke="#17202e" stroke-width="2.5"/>
+     <text x="115" y="226" font-size="11" font-weight="700" text-anchor="middle" fill="#4a5466">hours studied</text>
+     <text x="11" y="115" font-size="11" font-weight="700" text-anchor="middle" fill="#4a5466" transform="rotate(-90 11 115)">classes attended</text>
+     ${dots}
+     <circle id="mDot" r="9" fill="#6741d9" stroke="#fff" stroke-width="3"/>
+     <text id="mQ" font-size="11" font-weight="800" fill="#fff" text-anchor="middle">?</text>`;
+}
+
+function mysteryUpdate() {
+  const h = +$('mH').value, c = +$('mC').value;
+  const r = MW[0] * h + MW[1] * c + MW[2];
+  const [x, y] = MINI(GRAPH.x0 + 50 * h, GRAPH.y1 - 50 * c);
+  $('mHv').textContent = h;
+  $('mCv').textContent = c;
+  $('mCalc').textContent = `${round2(MW[0])}(${h}) + ${round2(MW[1])}(${c}) ${MW[2] < 0 ? '−' : '+'} ${round2(Math.abs(MW[2]))} = ${signed(Math.round(r * 10) / 10)}`;
+  const close = Math.abs(r) < 1 ? 'Close call: inside the road (the margin), so Max is less sure.' : 'Clear case: outside the road.';
+  $('mOut').innerHTML = r > 0 ? `<span class="pass">Max predicts: PASS ✓</span><small>${close}</small>`
+    : r < 0 ? `<span class="fail">Max predicts: needs extra help 📚</span><small>${close}</small>`
+    : `Right on the line: Max can't decide 🤔<small>A prediction is a best guess, not a promise.</small>`;
+  $('mDot').setAttribute('cx', x); $('mDot').setAttribute('cy', y);
+  $('mQ').setAttribute('x', x); $('mQ').setAttribute('y', y + 4);
+}
+
+/* =========================================================
+   Ending: the one idea, and the bonus cards
+   ========================================================= */
+const CL = { idea: false };
+function renderClosing() {
+  $('oneIdea').classList.toggle('on', CL.idea);
+  $('ideaBtn').hidden = CL.idea;
+}
+function showBonus(which) {
+  $('bGrid').hidden = !!which;
+  document.querySelectorAll('.bview').forEach(v => { v.hidden = v.id !== `bv-${which}`; });
+}
+
+/* =========================================================
    Main loop
    ========================================================= */
 let last = performance.now();
@@ -1600,12 +2326,12 @@ const DRAW = { 1: draw1, 2: draw2, 3: draw3, 4: draw4 };
 function render(now, dt) {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  if (quiz) { updateTimer(now); return; }   // the quiz card covers the map
+  if (cur.slide) { if (cur.slide === 'quiz') updateTimer(now); return; }   // HTML slides cover the map
   const k = view.s * view.dpr;
   ctx.setTransform(k, 0, 0, k, view.offx * view.dpr, view.offy * view.dpr);
   ctx.save();
-  if (intro) INTRO_DRAW[intro](IS, now, dt);
-  else DRAW[level](S[level], now, dt);
+  if (cur.level) DRAW[cur.level](S[cur.level], now, dt);
+  else cur.draw(IS, now, dt);
   ctx.restore();
 }
 function frame(now) {
@@ -1658,7 +2384,7 @@ function trackBest() {
 }
 
 canvas.addEventListener('pointerdown', e => {
-  if (intro) return introDown(e);
+  if (!cur.level) return introDown(e);
   const p = toWorld(e), hit = hitTest(p);
   if (!hit) return;
   drag = { ...hit, last: p };
@@ -1669,7 +2395,7 @@ canvas.addEventListener('pointerdown', e => {
 });
 
 canvas.addEventListener('pointermove', e => {
-  if (intro) return introMove(e);
+  if (!cur.level) return introMove(e);
   const p = toWorld(e);
   if (!drag) { hover = hitTest(p); canvas.style.cursor = cursorFor(hover); return; }
   const s = S[level];
@@ -1694,18 +2420,18 @@ canvas.addEventListener('pointermove', e => {
 });
 
 function endDrag() { drag = null; canvas.style.cursor = cursorFor(hover); }
-canvas.addEventListener('pointerup', () => { if (!intro) endDrag(); });
-canvas.addEventListener('pointercancel', () => { if (!intro) endDrag(); });
+canvas.addEventListener('pointerup', () => { if (cur.level) endDrag(); });
+canvas.addEventListener('pointercancel', () => { if (cur.level) endDrag(); });
 canvas.addEventListener('pointerleave', () => { if (!drag) hover = null; IS.hover = -1; });
 
-/* ---------- intro controls ---------- */
+/* ---------- graph screen controls ---------- */
 $('revealBtn').addEventListener('click', () => { IS.parts = Math.min(3, IS.parts + 1); });
 document.querySelectorAll('.part').forEach(el => el.addEventListener('click', () => {
   IS.parts = Math.max(IS.parts, +el.dataset.part + 1);
 }));
 $('replay3').addEventListener('click', () => { IS.t0 = performance.now(); });
 [['w1s', 'w1'], ['w2s', 'w2'], ['bs', 'b']].forEach(([id, k]) => $(id).addEventListener('input', e => { IS[k] = +e.target.value; }));
-$('startGame').addEventListener('click', () => goStep(5));
+$('replayF').addEventListener('click', () => { IS.t0 = performance.now(); });
 
 /* ---------- buttons ---------- */
 $('ask1').addEventListener('click', () => {
@@ -1714,6 +2440,24 @@ $('ask1').addEventListener('click', () => {
   const m = svmTrain(s.pts, HARD_C);
   s.best = { n: m.n, c: m.c, hw: m.hw, t0: performance.now() };
 });
+
+$('gs').addEventListener('input', e => { GM.slider = +e.target.value; GM.gamma = sliderToGamma(GM.slider); });
+document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
+['mH', 'mC'].forEach(id => $(id).addEventListener('input', mysteryUpdate));
+$('ideaBtn').addEventListener('click', () => { CL.idea = true; renderClosing(); });
+document.querySelectorAll('.bcard').forEach(b => b.addEventListener('click', () => showBonus(b.dataset.b)));
+document.querySelectorAll('.bback').forEach(b => b.addEventListener('click', () => showBonus(null)));
+buildMysteryGraph();
+
+$('play1').addEventListener('click', () => {
+  const s = S[1];
+  s.play = s.play ? null : (m => ({ n: m.n, c: m.c, hw: m.hw }))(svmTrain(s.pts, HARD_C));
+});
+$('ddBtn').addEventListener('click', () => { DD.k = Math.min(4, DD.k + 1); renderDeep(); });
+document.querySelectorAll('.walk button').forEach(b => b.addEventListener('click', () => {
+  $('c3').value = b.dataset.c;
+  $('c3').dispatchEvent(new Event('input'));
+}));
 
 $('others').addEventListener('click', () => {
   const s = S[1];
@@ -1758,66 +2502,246 @@ document.querySelectorAll('[data-reset]').forEach(b => b.addEventListener('click
   if (n === 3) $('c3').value = 0;
 }));
 
-/* ---------- navigation: intro 1–5, levels 1–4, then the quiz ---------- */
-const STEPS = ['i1', 'i2', 'i3', 'i4', 'i5', 1, 2, 3, 4, 'quiz'];
-let step = Math.max(0, STEPS.map(String).indexOf(location.hash.slice(1)));
+/* =========================================================
+   The story: chapters, screens, presenters
+   ========================================================= */
+const NAMES = [0, 1, 2].map(i => (Array.isArray(window.PRESENTERS) && window.PRESENTERS[i]) || `Presenter ${i + 1}`);
+const CHAPTERS = [
+  { label: 'Chapter 1', name: 'Max Learns to See', color: '#1c62d6', who: NAMES[0],
+    teaser: 'How Max turns students into numbers, and what SVM is.' },
+  { label: 'Chapter 2', name: 'Max Finds the Best Road', color: '#e8590c', who: NAMES[1],
+    teaser: 'How SVM picks the widest road, and the maths behind it.' },
+  { label: 'Chapter 3', name: 'Max Faces the Impossible', color: '#7048e8', who: NAMES[2],
+    teaser: 'Curved boundaries, tuning, and SVM in the real world.' },
+  { label: 'Ending', name: 'Quiz and Goodbye', color: '#2f9e44', who: 'All presenters' },
+  { label: 'Bonus', name: 'Want to Know More?', color: '#5a6577', who: 'If time allows' },
+];
+
+// Every screen: its chapter, what fills the stage (an HTML slide, a canvas drawing, or a level),
+// and 2–3 presenter talking points (press N).
+const STEPS = [
+  { id: 'ch1', ch: 0, slide: 'title', notes: [
+    'Introduce yourself and the story: today we follow Max, a robot who just joined our college.',
+    'Chapter 1 gives Max the basics: machine learning, features and labels, and what SVM is.'] },
+  { id: 'cover', ch: 0, slide: 'cover', title: 'Meet Max', notes: [
+    "Max's mission: predict which students might need extra help before the exam.",
+    'Hook: can a robot really predict who will pass? By the end of today, the class will know how.',
+    "Max's tool is SVM: the Support Vector Machine."] },
+  { id: 'ml', ch: 0, slide: 'ml', title: 'What is Machine Learning?', notes: [
+    'Traditional programming: we write the rules ourselves.',
+    'Machine learning: we give the computer examples, and it learns useful rules from them.',
+    'Like a kid shown 100 apples and oranges: after practice, they name a new fruit because they learned the patterns.'] },
+  { id: 'features', ch: 0, draw: drawFeatures, title: 'Features and Labels', notes: [
+    'Features (X) are the information the machine uses: hours studied and classes attended.',
+    'The label (y) is the correct answer we want to predict: Pass or Fail.',
+    "The computer doesn't actually see a student. It sees numbers that describe the student. Hover a dot to show one."] },
+  { id: 'supervised', ch: 0, slide: 'supervised', title: 'Supervised Learning', notes: [
+    "Supervised means a teacher gives the correct answers during training.",
+    'Classification puts things into categories (Pass or Fail, spam or not spam).',
+    'Regression predicts a number (exam marks, a house price). SVM can do both.'] },
+  { id: 'svm', ch: 0, draw: drawIntro3, title: 'What is SVM?', stepper: () => (IS.parts < 3 ? (IS.parts++, true) : false), notes: [
+    'Textbook: SVM is a supervised algorithm for classification and regression.',
+    'It asks two questions: where should I draw the line, and how can I leave the largest possible safety gap?',
+    'That second question is what makes SVM special. Next or Space reveals Support, Vector, Machine.'] },
+  { id: 'hyper', ch: 0, slide: 'hyper', title: 'What is a Hyperplane?', notes: [
+    "Don't be scared by the word: a hyperplane is simply the boundary SVM uses to separate data.",
+    '1D: a point. 2D: a line. 3D: a flat plane. 4D and more: a hyperplane.',
+    "Exam answer: \"the decision boundary that separates classes in the feature space.\" Hand over: Max can draw many lines… but which one is the best?"] },
+
+  { id: 'ch2', ch: 1, slide: 'title', notes: [
+    'Recap: Max can draw many lines between Pass and Fail students… but which one is the best?',
+    'Chapter 2: how SVM picks the best road, the maths behind it, and what to do with a troublemaker.'] },
+  { id: 'l1', ch: 1, level: 1, notes: [
+    'Many roads split the two groups. Click "Show other roads" and let the class vote for A–E.',
+    'Playground test: a line too close to red or too close to blue is risky. The best choice is equally far from the nearest red and blue students.',
+    'The margin is the distance from the boundary to the closest points, measured straight across (perpendicular).'] },
+  { id: 'l2', ch: 1, level: 2, notes: [
+    'SVM wants the largest possible margin: like a wide road, it leaves more space on both sides.',
+    'Support vectors are the points nearest the boundary; they decide where it goes. Drag a far point (nothing changes), then a glowing one (the road moves).',
+    "A bigger margin can help on new data, but it doesn't guarantee perfect predictions."] },
+  { id: 'math1', ch: 1, draw: drawIntro4, title: 'The Math: A Line That Decides', notes: [
+    'The line: w₁x₁ + w₂x₂ + b = 0. x = features, w = weights (how much each feature counts), b = bias (shifts the line).',
+    'Click a dot: 2(6) + 1(8) − 15 = +5. A positive result is one class (Pass), a negative result is the other (Fail).',
+    'In a real SVM, the weights and bias are learned from the training data, not chosen by hand like these sliders.'] },
+  { id: 'math2', ch: 1, draw: drawIntro5, title: 'The Math: The Widest Road', notes: [
+    'Margin width = 2 / ‖w‖, where ‖w‖ is the length of the weight vector.',
+    'To make the margin large, SVM makes ‖w‖ small while keeping every point on the correct side.',
+    'The points on the dashed lines are the support vectors: Aditya, Meera and Aarav.'] },
+  { id: 'deep', ch: 1, slide: 'deep', title: "SVM's Goal in One Line (optional)",
+    stepper: () => (DD.k < 4 ? (DD.k++, renderDeep(), true) : false), notes: [
+    'Optional: skip this screen if you are short on time.',
+    'Read it as: a wide road (½‖w‖²) plus a penalty for rule-breaking (C·Σξᵢ). Next or Space reveals one meaning at a time.',
+    'Real SVM solves this optimisation mathematically. The animations on this site only show the idea.'] },
+  { id: 'l3', ch: 1, level: 3, notes: [
+    'Hard margin, like a classroom walkway: "No student may step into the walkway!" It only works when perfect separation is possible, and it is very sensitive to unusual points like Arjun.',
+    'Soft margin: "Try your best, a small slip is okay." It allows some violations, which suits real data. In soft margin, support vectors can also be points inside the margin or on the wrong side.',
+    'C is how strongly the teacher punishes rule-breaking: low C = forgiving, high C = strict. Hand over: but what if no straight road works at all?'] },
+
+  { id: 'ch3', ch: 2, slide: 'title', notes: [
+    'Recap: Max can find the widest road, and he knows how to deal with a troublemaker like Arjun.',
+    'Chapter 3: what to do when no straight road works, how to tune SVM, and where it is used in the real world.'] },
+  { id: 'l4', ch: 2, level: 4, notes: [
+    "Max's new puzzle at the playground: red balls in the middle, blue balls in a circle around them. No straight line works; this is called non-linearly separable data.",
+    'Add a new feature z = x² + y² and lift each ball to that height. Red balls near the centre stay low, blue balls rise high, and a flat plane separates them. Back in 2D, the cut is a circle.',
+    "The kernel trick lets SVM act as if it works in this higher dimension without calculating every new coordinate, which saves computation. Kernel trick = SVM's superpower."] },
+  { id: 'kernels', ch: 2, slide: 'kernels', title: "SVM's Kernel Toolbox", notes: [
+    'Linear: a straight line or flat boundary. The best starting point for simple or high-dimensional data, such as text classification.',
+    'Polynomial: curved boundaries. RBF (Gaussian): flexible nonlinear boundaries, like red in the middle and blue around; a popular default when the pattern is not a straight line.',
+    'Sigmoid: loosely related to neural networks. Less common in practice, and not a valid kernel for every parameter setting.'] },
+  { id: 'gamma', ch: 2, draw: drawGamma, title: 'Gamma: Circles of Influence', notes: [
+    'Gamma is a setting mainly for the RBF kernel: imagine each training point has a circle of influence.',
+    'Low gamma: wide influence, a smoother boundary. High gamma: narrow influence, very local and wiggly. Drag the slider to show both ends.',
+    "Don't confuse C and gamma: C is the penalty for breaking the rules; gamma is how far each point's influence reaches. The picture is a conceptual illustration."] },
+  { id: 'fit', ch: 2, slide: 'fit', title: 'Overfitting vs Underfitting', notes: [
+    "Underfitting is like learning only three definitions: you can't answer harder questions.",
+    "Overfitting is like memorising last year's paper: you're stuck when a question changes slightly.",
+    'A good fit means you understood the concepts, so you can solve new questions. SVM balances this with its margin, C, kernel choice and gamma. The sketches are simplified, not fitted models.'] },
+  { id: 'real', ch: 2, slide: 'real', title: 'Max Goes into the Real World',
+    stepper: () => (RW.tab === 'types' ? (setTab('uses'), true) : false), notes: [
+    'Types: SVC classifies; SVR predicts numbers and keeps errors inside a tube around the line (the epsilon-insensitive loss); One-Class SVM learns what normal looks like and flags anomalies.',
+    'More than two groups: train several two-group SVMs, one-vs-rest (one per class) or one-vs-one (one per pair). Next or Space switches to real-world uses.',
+    'Uses: spam detection, medical data, finance, anomaly detection. Caveats: medical use needs careful clinical validation, and finance predictions never guarantee profit.'] },
+  { id: 'pros', ch: 2, slide: 'pros', title: 'Advantages vs Disadvantages', notes: [
+    'Advantages: works well in many high-dimensional problems, uses a margin-based principle, kernels handle nonlinear patterns, works well on small and medium datasets.',
+    'Disadvantages: kernel SVMs can be slow on very large datasets, are sensitive to feature scaling, need kernel and parameter tuning, and nonlinear models are hard to interpret.',
+    "No algorithm is automatically best for every dataset. For example, linear SVM often works very well for text."] },
+  { id: 'final', ch: 2, slide: 'final', title: 'How SVM Finds the Best Road', notes: [
+    'The full recipe: collect data, extract features and labels, split into training and test data, scale the features, choose a kernel with C and gamma, train, test, then predict.',
+    "Mystery student: move the sliders. Max checks which side of his road the new student falls on; inside the road (the margin) means a close call.",
+    'A prediction is a best guess from the pattern, not a certainty. Hand over: now all three presenters together for the quiz.'] },
+
+  { id: 'quiz', ch: 3, slide: 'quiz', title: 'Quick Quiz', stepper: () => {
+      if (QZ.i >= QUIZ.length) return false;
+      quizNext();
+      return true;
+    }, notes: [
+    'All presenters: read each question, let the class answer out loud, then click (or press A, B or C).',
+    'Each answer shows the reason straight away. Next or Space moves to the next question.'] },
+  { id: 'closing', ch: 3, slide: 'closing', title: "Max's 30-Second Explanation",
+    stepper: () => (!CL.idea ? (CL.idea = true, renderClosing(), true) : false), notes: [
+    "Read Max's 30-second explanation aloud.",
+    'Then reveal the one idea that connects everything (Next or Space): balance separation, margin size and allowed errors to predict unseen data well.',
+    'Thank the class, and open the bonus cards if there is time.'] },
+
+  { id: 'bonus', ch: 4, slide: 'bonus', title: 'Want to Know More?', notes: [
+    'Only if time allows. Click a card to open it, and ← to come back.',
+    'Python: the Iris example uses a pipeline with StandardScaler and SVC(kernel="rbf"). The pipeline learns scaling only from the training set, which prevents data leakage.',
+    'Metrics: accuracy is not enough when one class is rare (like fraud); use precision, recall and F1. For SVR, use MAE, RMSE and R².'] },
+];
+
+const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const stepTitle = s => (s.slide === 'title' ? `${CHAPTERS[s.ch].label}: ${CHAPTERS[s.ch].name}` : s.level ? TEXT[s.level].title : s.title);
+
+let step = Math.max(0, STEPS.findIndex(s => s.id === location.hash.slice(1)));
+let cur = STEPS[step], notesOn = false;
 
 function syncSliders() { $('w1s').value = IS.w1; $('w2s').value = IS.w2; $('bs').value = IS.b; }
 
 function goStep(i) {
   step = clamp(i, 0, STEPS.length - 1);
-  const id = STEPS[step];
-  quiz = id === 'quiz';
-  intro = typeof id === 'string' && !quiz ? +id.slice(1) : 0;
-  if (typeof id === 'number') level = id;
+  cur = STEPS[step];
+  const ch = CHAPTERS[cur.ch], T = cur.level ? TEXT[cur.level] : null, isTitle = cur.slide === 'title';
+  level = cur.level || 0;
   drag = null; hover = null;
   Object.assign(IS, { t0: performance.now(), hover: -1, pin: -1 });
-  openExplain(false);
-  document.querySelectorAll('.lvl').forEach(el => el.classList.toggle('on',
-    el.dataset.quiz ? quiz : el.dataset.intro ? +el.dataset.intro === intro : typeof id === 'number' && +el.dataset.level === level));
-  document.querySelectorAll('.dot').forEach(el => {
-    el.classList.toggle('on', +el.dataset.step === step);
-    el.classList.toggle('done', +el.dataset.step < step);
-  });
-  $('tag').textContent = quiz ? 'Quiz · 2 minutes' : intro ? `Intro ${intro} of 5` : `Level ${level} of 4`;
-  $('title').textContent = quiz ? 'Quick Quiz' : intro ? INTRO_TITLES[intro] : TEXT[level].title;
-  $('say').hidden = !!intro;                          // intro screens use their own exact text
-  $('keybox').hidden = !!intro || quiz;
-  if (quiz) $('say').textContent = "5 quick questions about today's lesson. Pick the best answer.";
-  else if (!intro) { $('say').textContent = TEXT[level].say; $('key').textContent = TEXT[level].key; }
-  $('next').textContent = intro === 5 ? 'Level 1 →' : intro ? 'Next →' : level === 4 ? 'Quiz →' : 'Next Level →';
+  document.documentElement.style.setProperty('--ch', ch.color);
+  document.querySelectorAll('.slide').forEach(el => el.classList.toggle('on', el.dataset.slide === cur.slide));
+  document.querySelectorAll('.lvl').forEach(el => el.classList.toggle('on', el.dataset.step === (isTitle ? 'title' : cur.id)));
+  if (isTitle) {
+    $('tcNum').textContent = ch.label;
+    $('tcName').textContent = ch.name;
+    $('tcWho').textContent = `🎤 Presented by ${ch.who}`;
+    $('tcTeaser').textContent = ch.teaser;
+  }
+  $('tag').textContent = isTitle ? `${ch.label} of 3` : `${ch.label} · ${ch.who}`;
+  $('title').textContent = isTitle ? ch.name : stepTitle(cur);
+  $('say').hidden = $('keybox').hidden = !T;
+  if (T) { $('say').textContent = T.say; $('key').textContent = T.key; }
+  $('next').textContent = step === STEPS.length - 1 ? 'Start Over ↺' : 'Next →';
   $('next').disabled = false;
   $('prev').disabled = step === 0;
-  $('quizBox').hidden = !quiz;
-  if (quiz) { if (!QZ.t0) QZ.t0 = performance.now(); renderQuiz(); }   // the 2-minute timer starts on first visit
+  if (cur.slide === 'quiz') { if (!QZ.t0) QZ.t0 = performance.now(); renderQuiz(); }
+  if (cur.slide === 'deep') renderDeep();
+  if (cur.slide === 'real') setTab(RW.tab);
+  if (cur.slide === 'final') mysteryUpdate();
+  if (cur.slide === 'closing') renderClosing();
+  if (cur.slide === 'bonus') showBonus(null);
+  $('gs').value = GM.slider;
   $('c3').value = S[3].slider;
   syncSliders();
-  history.replaceState(null, '', '#' + id);
+  canvas.style.cursor = 'default';
+  $('menu').hidden = true;
+  renderProgress();
+  renderNotes();
+  history.replaceState(null, '', '#' + cur.id);
 }
+
 function next() {
-  if (quiz && QZ.i < QUIZ.length) { quizNext(); return; }          // in the quiz, Next moves to the next question
+  if (cur.stepper && cur.stepper()) return;        // reveal the next item on this screen first
   if (step < STEPS.length - 1) goStep(step + 1);
-  else {
-    for (let i = 1; i <= 4; i++) S[i] = fresh(i);
-    IS = freshIntro();
-    Object.assign(QZ, { i: 0, picks: [], t0: 0, tEnd: 0 });
-    goStep(0);
-  }
+  else startOver();
 }
+function startOver() {
+  for (let i = 1; i <= 4; i++) S[i] = fresh(i);
+  IS = freshIntro();
+  Object.assign(QZ, { i: 0, picks: [], t0: 0, tEnd: 0 });
+  DD.k = 0;
+  RW.tab = 'types';
+  CL.idea = false;
+  goStep(0);
+}
+
+// progress bar: one segment per screen, coloured by chapter
+function renderProgress() {
+  const ch = CHAPTERS[cur.ch];
+  $('plabel').innerHTML = `<b>${esc(ch.label)}</b><span>${esc(ch.name)} · 🎤 ${esc(ch.who)}</span>`;
+  $('segs').innerHTML = STEPS.map((s, i) =>
+    (i && s.ch !== STEPS[i - 1].ch ? '<i class="gap"></i>' : '') +
+    `<button class="seg${i < step ? ' done' : ''}${i === step ? ' on' : ''}" data-i="${i}" style="--c:${CHAPTERS[s.ch].color}"` +
+    ` title="${esc(stepTitle(s))}" aria-label="${esc(stepTitle(s))}"></button>`).join('');
+}
+
+// presenter notes (N)
+function renderNotes() {
+  $('notes').hidden = !notesOn;
+  if (!notesOn) return;
+  $('notesTitle').textContent = `🗒 Presenter notes · ${stepTitle(cur)}`;
+  $('notesList').innerHTML = (cur.notes || []).map(n => `<li>${esc(n)}</li>`).join('');
+}
+function toggleNotes() { notesOn = !notesOn; renderNotes(); }
+
+// chapter menu (M)
+function openMenu() {
+  $('menuGrid').innerHTML = CHAPTERS.map((ch, k) => {
+    const items = STEPS.map((s, i) => [s, i]).filter(([s]) => s.ch === k);
+    if (!items.length) return '';
+    return `<div class="mch" style="--c:${ch.color}">` +
+      `<button class="mtitle" data-i="${items[0][1]}">${esc(ch.label)}: ${esc(ch.name)}<small>🎤 ${esc(ch.who)}</small></button>` +
+      `<ol>${items.map(([s, i]) => `<li><button data-i="${i}"${i === step ? ' class="cur"' : ''}>${esc(s.slide === 'title' ? 'Title card' : stepTitle(s))}</button></li>`).join('')}</ol></div>`;
+  }).join('');
+  $('menu').hidden = false;
+}
+function closeMenu() { $('menu').hidden = true; }
+
+// "Over to …" lines at the end of each chapter
+document.querySelectorAll('.handover').forEach(el => {
+  const nc = CHAPTERS[+el.dataset.next];
+  el.style.setProperty('--nc', nc.color);
+  el.querySelector('.hand').textContent = nc.label === 'Ending' ? '🎤 Now all three presenters together' : `🎤 Over to ${nc.who}`;
+});
 
 $('next').addEventListener('click', next);
 $('prev').addEventListener('click', () => goStep(step - 1));
-document.querySelectorAll('.dot').forEach(b => b.addEventListener('click', () => goStep(+b.dataset.step)));
-
+$('segs').addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (b) goStep(+b.dataset.i); });
+$('menuGrid').addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (b) goStep(+b.dataset.i); });
+$('menu').addEventListener('click', e => { if (e.target === e.currentTarget) closeMenu(); });
+$('menuClose').addEventListener('click', closeMenu);
+$('menuBtn').addEventListener('click', () => ($('menu').hidden ? openMenu() : closeMenu()));
 $('qOpts').addEventListener('click', e => {
   const b = e.target.closest('.opt');
   if (b && !b.disabled) quizAnswer(+b.dataset.k);
 });
 $('qNext').addEventListener('click', quizNext);
-
-$('explainBtn').addEventListener('click', () => openExplain($('explainBox').hidden));
-$('exClose').addEventListener('click', () => openExplain(false));
-$('explainBox').addEventListener('click', e => { if (e.target === e.currentTarget) openExplain(false); });
 
 function toggleFullscreen() {
   if (document.fullscreenElement) document.exitFullscreen();
@@ -1825,17 +2749,26 @@ function toggleFullscreen() {
 }
 $('fs').addEventListener('click', toggleFullscreen);
 
+// after a mouse click, drop focus so Space moves to the next screen instead of pressing the button again
+document.addEventListener('click', e => { const b = e.target.closest('button'); if (b && e.detail) b.blur(); });
+
 document.addEventListener('keydown', e => {
-  if (e.target.matches('input')) return;
-  if (quiz && e.key.length === 1 && 'abcd1234'.includes(e.key.toLowerCase())) {   // answer with A–D or 1–4
-    quizAnswer('abcd1234'.indexOf(e.key.toLowerCase()) % 4);
+  const k = e.key;
+  if (!$('menu').hidden) {
+    if (k === 'Escape' || k === 'm' || k === 'M') { closeMenu(); e.preventDefault(); }
     return;
   }
-  if (e.key === 'ArrowRight' || e.key === 'PageDown') { next(); e.preventDefault(); }
-  else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { goStep(step - 1); e.preventDefault(); }
-  else if (e.key === 'f' || e.key === 'F') toggleFullscreen();
-  else if (e.key === 'e' || e.key === 'E') openExplain($('explainBox').hidden);
-  else if (e.key === 'Escape') openExplain(false);
+  if (e.target instanceof Element && e.target.matches('input') && k !== ' ') return;   // sliders keep their arrow keys
+  if (cur.slide === 'quiz' && QZ.i < QUIZ.length && k.length === 1) {   // answer with A–D or 1–4
+    const idx = Math.max('abcd'.indexOf(k.toLowerCase()), '1234'.indexOf(k));
+    if (idx >= 0 && idx < QUIZ[QZ.i].opts.length) { quizAnswer(idx); return; }
+  }
+  if (k === 'ArrowRight' || k === 'PageDown' || k === ' ') { next(); e.preventDefault(); }
+  else if (k === 'ArrowLeft' || k === 'PageUp') { goStep(step - 1); e.preventDefault(); }
+  else if (k === 'f' || k === 'F') toggleFullscreen();
+  else if (k === 'n' || k === 'N') toggleNotes();
+  else if (k === 'm' || k === 'M') openMenu();
+  else if (k === 'Escape' && notesOn) toggleNotes();
 });
 
 goStep(step);
