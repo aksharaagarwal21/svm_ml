@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Build the Widest Road</title>
+<title>Support Vector Machines</title>
 <script>
   /* ============================================================
      PRESENTER NAMES: edit these three names before class.
@@ -180,18 +180,14 @@
   .slide.vcenter { justify-content: center; }
   .cap { margin: 0; font-size: 1rem; line-height: 1.4; color: var(--muted); font-weight: 600; text-align: center; }
 
-  /* Max the robot */
-  .max { width: 11rem; height: 13.75rem; flex: none; }
+  /* Introductory and summary cards */
   .bubble {
     position: relative; max-width: 25rem; background: #fff; border: 3px solid var(--ink); border-radius: 1.3rem;
     padding: 1rem 1.2rem; font-size: 1.22rem; font-weight: 700; line-height: 1.4; text-align: left;
   }
-  .bubble::before { content: ''; position: absolute; left: -1.25rem; top: 2rem; border: .65rem solid transparent; border-right: 1.1rem solid var(--ink); }
-  .bubble::after { content: ''; position: absolute; left: -.85rem; top: 2.2rem; border: .45rem solid transparent; border-right: .8rem solid #fff; }
 
   /* chapter title card */
   .titlecard { background: var(--ch); color: #fff; align-items: center; justify-content: center; text-align: center; gap: .5rem; }
-  .titlecard .max { width: 8.5rem; height: 10.6rem; }
   .titlecard .chnum { font-size: 1.1rem; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; opacity: .85; }
   .titlecard .chname { font-size: 3rem; font-weight: 800; line-height: 1.05; letter-spacing: -.02em; }
   .titlecard .who { margin-top: .4rem; font-size: 1.3rem; font-weight: 700; background: rgba(255,255,255,.18); padding: .35rem 1.1rem; border-radius: 99px; }
@@ -228,7 +224,7 @@
   .dcard b { font-size: 1.5rem; color: var(--ch); }
   .dcard span { font-size: 1.05rem; font-weight: 700; color: #2c3546; }
 
-  /* playground test, walkway (Level 3) */
+  /* margin comparison and penalty controls (Level 3) */
   .walk { display: grid; gap: .4rem; }
   .walk button {
     display: flex; flex-wrap: wrap; align-items: baseline; gap: .1rem .45rem; text-align: left;
@@ -299,7 +295,6 @@
   .mgraph { width: 12.5rem; height: 12.5rem; }
 
   /* ending and bonus */
-  .closing .max { width: 8rem; height: 10rem; }
   .bubble.long { max-width: 34rem; font-size: 1.02rem; font-weight: 600; }
   .oneidea { max-width: 44rem; background: #fff7dc; border-left: .4rem solid var(--gold); border-radius: .8rem; padding: .8rem 1.1rem; font-size: 1.15rem; line-height: 1.45; opacity: 0; transform: translateY(8px); transition: opacity .5s, transform .5s; }
   .oneidea.on { opacity: 1; transform: none; }
@@ -393,37 +388,12 @@
     .two, .four { grid-template-columns: 1fr 1fr; }
   }
 </style>
+<link rel="stylesheet" href="live-demo/demo.css">
 </head>
 <body>
 
-<!-- Max the robot, drawn once and reused -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
-  <symbol id="max" viewBox="0 0 200 250">
-    <line x1="100" y1="36" x2="100" y2="16" stroke="#17202e" stroke-width="5" stroke-linecap="round"/>
-    <circle cx="100" cy="13" r="9" fill="#f5b400" stroke="#17202e" stroke-width="4"/>
-    <rect x="26" y="70" width="16" height="32" rx="6" fill="#1c62d6" stroke="#17202e" stroke-width="4"/>
-    <rect x="158" y="70" width="16" height="32" rx="6" fill="#1c62d6" stroke="#17202e" stroke-width="4"/>
-    <rect x="40" y="36" width="120" height="98" rx="32" fill="#eef3fb" stroke="#17202e" stroke-width="5"/>
-    <rect x="56" y="54" width="88" height="62" rx="22" fill="#17202e"/>
-    <circle cx="82" cy="82" r="9" fill="#7fd1ff"/>
-    <circle cx="118" cy="82" r="9" fill="#7fd1ff"/>
-    <circle cx="85" cy="79" r="3" fill="#fff"/>
-    <circle cx="121" cy="79" r="3" fill="#fff"/>
-    <path d="M86 100 q14 10 28 0" fill="none" stroke="#7fd1ff" stroke-width="5" stroke-linecap="round"/>
-    <path d="M60 158 q-26 6 -32 34" fill="none" stroke="#17202e" stroke-width="7" stroke-linecap="round"/>
-    <path d="M140 158 q26 -8 32 -36" fill="none" stroke="#17202e" stroke-width="7" stroke-linecap="round"/>
-    <circle cx="27" cy="196" r="9" fill="#eef3fb" stroke="#17202e" stroke-width="4"/>
-    <circle cx="173" cy="118" r="9" fill="#eef3fb" stroke="#17202e" stroke-width="4"/>
-    <rect x="56" y="140" width="88" height="72" rx="22" fill="#1c62d6" stroke="#17202e" stroke-width="5"/>
-    <rect x="74" y="156" width="52" height="34" rx="7" fill="#5d636e"/>
-    <path d="M100 160 v26" stroke="#ffd43b" stroke-width="3" stroke-dasharray="5 4"/>
-    <rect x="66" y="214" width="26" height="24" rx="9" fill="#17202e"/>
-    <rect x="108" y="214" width="26" height="24" rx="9" fill="#17202e"/>
-  </symbol>
-</svg>
-
 <header>
-  <div class="brand"><b>🛣️ Build the Widest Road</b><span>Max's Support Vector Machine story</span></div>
+  <div class="brand"><b>Support Vector Machines</b><span>Concepts, mathematics and applications</span></div>
   <div class="progress">
     <div class="plabel-row" id="plabel"></div>
     <div class="segs" id="segs"></div>
@@ -442,7 +412,6 @@
 
     <!-- chapter title card (shared by all chapters) -->
     <div class="slide titlecard" data-slide="title">
-      <svg class="max" viewBox="0 0 200 250" aria-hidden="true"><use href="#max" width="200" height="250"/></svg>
       <div class="chnum" id="tcNum"></div>
       <div class="chname" id="tcName"></div>
       <div class="who" id="tcWho"></div>
@@ -451,22 +420,21 @@
     <!-- Chapter 1 -->
     <div class="slide cover" data-slide="cover">
       <div class="cover-row">
-        <svg class="max" viewBox="0 0 200 250" aria-hidden="true"><use href="#max" width="200" height="250"/></svg>
-        <div class="bubble">Hi, I'm Max! 👋<br>I just joined your college.<br>My job: find students who might need extra help before the exam.</div>
+        <div class="bubble">Support Vector Machines<br>Learn how SVM uses labeled data to classify new examples and identify patterns.</div>
       </div>
-      <div class="hook">Can a robot predict who will pass?</div>
+      <div class="hook">How does SVM classify new data?</div>
     </div>
 
     <div class="slide vcenter" data-slide="ml">
       <div class="two">
         <div class="ccard">
           <h3>Traditional programming</h3>
-          <div class="flowmini"><span class="chip">Rules ✍️</span>+<span class="chip">Data</span>→<span class="chip out">Answers</span></div>
+          <div class="flowmini"><span class="chip">Rules</span>+<span class="chip">Data</span>→<span class="chip out">Answers</span></div>
           <p>We write the rules ourselves.</p>
         </div>
         <div class="ccard hi">
           <h3>Machine Learning</h3>
-          <div class="flowmini"><span class="chip">Data</span>+<span class="chip">Answers</span>→<span class="chip out">Rules 🤖</span></div>
+          <div class="flowmini"><span class="chip">Data</span>+<span class="chip">Answers</span>→<span class="chip out">Rules</span></div>
           <p>The computer learns the rules from examples.</p>
         </div>
       </div>
@@ -474,13 +442,13 @@
         <div class="fruit"><span class="em">🍎</span><b>Apple</b><small>red · round · smooth</small></div>
         <div class="fruit"><span class="em">🍊</span><b>Orange</b><small>orange · round · textured</small></div>
         <div class="karrow">100 examples<br>→</div>
-        <div class="fruit q"><span class="em">🍎</span><b>“That's an apple!”</b><small>a fruit it has never seen</small></div>
+        <div class="fruit q"><span class="em">🍎</span><b>Predicted: Apple</b><small>an unseen example</small></div>
       </div>
-      <p class="cap">A kid learns patterns from examples. Machine learning works the same way.</p>
+      <p class="cap">Machine learning uses patterns in labeled examples to classify unseen data.</p>
     </div>
 
     <div class="slide vcenter" data-slide="supervised">
-      <div class="supbox">📚 Examples <span>+</span> ✅ Right answers <span>→</span> 🤖 Max learns</div>
+      <div class="supbox">Examples <span>+</span> Labels <span>→</span> Trained model</div>
       <div class="two">
         <div class="ccard hi"><h3>Classification</h3><div class="bigex">Pass <small>or</small> Fail?</div><p>Predicts a <b>category</b>.</p></div>
         <div class="ccard"><h3>Regression</h3><div class="bigex">72 <small>/ 100</small></div><p>Predicts a <b>number</b>, like exam marks.</p></div>
@@ -532,16 +500,16 @@
 
     <!-- Chapter 2 -->
     <div class="slide vcenter" data-slide="deep">
-      <div class="ddtag">⭐ Optional deep dive</div>
+      <div class="ddtag">Optional deep dive</div>
       <div class="formula">
         min <span class="fp" data-p="0">½‖w‖²</span> + <span class="fp" data-p="1">C</span> <span class="fp" data-p="2">Σ ξᵢ</span>
         <div class="st">subject to &nbsp;yᵢ(wᵀxᵢ + b) ≥ 1 − <span class="fp" data-p="3">ξᵢ</span>, &nbsp;ξᵢ ≥ 0</div>
       </div>
       <ol class="dd">
         <li data-b="0"><b>½‖w‖²</b><span>The first part rewards a wide margin.</span></li>
-        <li data-b="1"><b>C · Σξᵢ</b><span>The second part penalises breaking the rules.</span></li>
-        <li data-b="2"><b>C</b><span>controls how much rule-breaking matters.</span></li>
-        <li data-b="3"><b>ξᵢ</b><span>measures how much each point breaks its margin rule.</span></li>
+        <li data-b="1"><b>C · Σξᵢ</b><span>The second part penalises margin violations.</span></li>
+        <li data-b="2"><b>C</b><span>controls the penalty for margin violations.</span></li>
+        <li data-b="3"><b>ξᵢ</b><span>measures how much each point violates the margin constraint.</span></li>
       </ol>
     </div>
 
@@ -585,7 +553,7 @@
           <b>Sigmoid</b><span>S-shaped, related to neural networks. Less common.</span>
         </div>
       </div>
-      <p class="cap">A kernel decides what shape Max's boundary is allowed to take.</p>
+      <p class="cap">A kernel determines the types of decision boundaries SVM can learn.</p>
     </div>
 
     <div class="slide vcenter" data-slide="fit">
@@ -598,7 +566,7 @@
             <g fill="#1c62d6" stroke="#fff" stroke-width="2.5"><circle cx="104" cy="28" r="7"/><circle cx="134" cy="52" r="7"/><circle cx="164" cy="34" r="7"/><circle cx="178" cy="76" r="7"/><circle cx="140" cy="78" r="7"/><circle cx="116" cy="60" r="7"/></g>
             <circle cx="150" cy="104" r="7" fill="#e03131" stroke="#fff" stroke-width="2.5"/>
           </svg>
-          <b>Underfitting</b><span>📖 Learned only three definitions: stuck on harder questions.</span>
+          <b>Underfitting</b><span>The model is too simple to capture the underlying pattern.</span>
         </div>
         <div class="dcard good-fit">
           <svg viewBox="0 0 200 130" aria-hidden="true">
@@ -608,7 +576,7 @@
             <g fill="#1c62d6" stroke="#fff" stroke-width="2.5"><circle cx="104" cy="28" r="7"/><circle cx="134" cy="52" r="7"/><circle cx="164" cy="34" r="7"/><circle cx="178" cy="76" r="7"/><circle cx="140" cy="78" r="7"/><circle cx="116" cy="60" r="7"/></g>
             <circle cx="150" cy="104" r="7" fill="#e03131" stroke="#fff" stroke-width="2.5"/>
           </svg>
-          <b>Good fit</b><span>💡 Understood the ideas: can solve new questions.</span>
+          <b>Good fit</b><span>The model captures the pattern and generalises to unseen data.</span>
         </div>
         <div class="dcard">
           <svg viewBox="0 0 200 130" aria-hidden="true">
@@ -618,7 +586,7 @@
             <g fill="#1c62d6" stroke="#fff" stroke-width="2.5"><circle cx="104" cy="28" r="7"/><circle cx="134" cy="52" r="7"/><circle cx="164" cy="34" r="7"/><circle cx="178" cy="76" r="7"/><circle cx="140" cy="78" r="7"/><circle cx="116" cy="60" r="7"/></g>
             <circle cx="150" cy="104" r="7" fill="#e03131" stroke="#fff" stroke-width="2.5"/>
           </svg>
-          <b>Overfitting</b><span>📝 Memorised last year's paper: stuck when a question changes.</span>
+          <b>Overfitting</b><span>The model fits training noise and generalises poorly.</span>
         </div>
       </div>
       <p class="cap">Simplified sketches, not fitted models.</p>
@@ -712,13 +680,13 @@
       </div>
       <div class="mystery">
         <div>
-          <h3>🔮 Predict a Mystery Student</h3>
+          <h3>Predict a New Student Outcome</h3>
           <label class="msl"><span>Hours studied</span><input type="range" id="mH" min="0" max="10" step="1" value="7"><output id="mHv"></output></label>
           <label class="msl"><span>Classes attended</span><input type="range" id="mC" min="0" max="10" step="1" value="4"><output id="mCv"></output></label>
           <div class="mcalc" id="mCalc"></div>
           <div class="mout" id="mOut"></div>
         </div>
-        <svg class="mgraph" id="mGraph" viewBox="0 0 230 230" aria-label="Max's road with the mystery student"></svg>
+        <svg class="mgraph" id="mGraph" viewBox="0 0 230 230" aria-label="SVM decision boundary with a new student example"></svg>
       </div>
     </div>
 
@@ -732,102 +700,13 @@
     </div>
     <div class="slide cover closing" data-slide="closing">
       <div class="cover-row">
-        <svg class="max" viewBox="0 0 200 250" aria-hidden="true"><use href="#max" width="200" height="250"/></svg>
-        <div class="bubble long">Imagine red balls and blue balls placed on a floor. You want to separate them using a line. Many lines might work, but SVM chooses one with the largest possible gap between the two groups. The balls that influence this gap are called support vectors, and the line is called a hyperplane. If a straight boundary isn't enough, SVM can use kernels to find more complex boundaries. The result is a model that can classify new data.</div>
+        <div class="bubble long">SVM learns a decision boundary that separates classes while maximising the margin. The training points that determine this boundary are called support vectors, and the boundary is called a hyperplane. If a straight boundary isn't enough, SVM can use kernels to find more complex boundaries. The result is a model that can classify new data.</div>
       </div>
-      <div class="oneidea" id="oneIdea"><b>The one idea that connects everything</b>SVM doesn't simply try to separate training examples. It tries to learn a boundary that balances separation, margin size, and allowed errors, so it can make useful predictions on unseen data.</div>
+      <div class="oneidea" id="oneIdea"><b>Key takeaway</b>SVM doesn't simply try to separate training examples. It tries to learn a boundary that balances separation, margin size, and allowed errors, so it can make useful predictions on unseen data.</div>
     </div>
 
-    <!-- Bonus -->
-    <div class="slide" data-slide="bonus">
-      <div class="bgrid" id="bGrid">
-        <button class="bcard" data-b="python"><span class="em">🐍</span><b>Python code</b><small>The Iris flower example, command by command</small></button>
-        <button class="bcard" data-b="metrics"><span class="em">📏</span><b>Evaluation metrics</b><small>How do we know our SVM is good?</small></button>
-        <button class="bcard" data-b="compare"><span class="em">⚖️</span><b>SVM vs other algorithms</b><small>How each one learns</small></button>
-      </div>
-
-      <div class="bview" id="bv-python" hidden>
-        <div class="bhead"><button class="btn ghost bback">← All cards</button><h2>🐍 Python: SVM on the Iris flowers</h2></div>
-        <div class="pygrid">
-<pre class="code"><span class="c"># Identify the flower species from 4 measurements</span>
-from sklearn.datasets import load_iris
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVC
-from sklearn.pipeline import make_pipeline
-from sklearn.metrics import accuracy_score, classification_report
-
-<span class="c"># 1. Load the flower dataset</span>
-iris = load_iris()
-X = iris.data
-y = iris.target
-
-<span class="c"># 2. Split into training and testing data</span>
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42, stratify=y)
-
-<span class="c"># 3. Scale features and train an SVM</span>
-model = make_pipeline(
-    StandardScaler(),
-    SVC(kernel="rbf", C=1.0, gamma="scale"))
-model.fit(X_train, y_train)
-
-<span class="c"># 4. Predict on unseen test examples</span>
-y_pred = model.predict(X_test)
-
-<span class="c"># 5. Evaluate performance</span>
-print("Accuracy:", accuracy_score(y_test, y_pred))
-print(classification_report(y_test, y_pred))
-
-<span class="c"># 6. Predict one new flower</span>
-new_flower = [[5.1, 3.5, 1.4, 0.2]]
-prediction = model.predict(new_flower)</pre>
-          <div>
-            <table class="btable">
-              <tr><th>Code</th><th>What it means</th></tr>
-              <tr><td><code>load_iris()</code></td><td>Give me the flower examples</td></tr>
-              <tr><td><code>train_test_split()</code></td><td>Separate practice questions from exam questions</td></tr>
-              <tr><td><code>StandardScaler()</code></td><td>Make feature scales comparable</td></tr>
-              <tr><td><code>SVC()</code></td><td>Create an SVM classifier</td></tr>
-              <tr><td><code>kernel="rbf"</code></td><td>Allow a curved boundary</td></tr>
-              <tr><td><code>C=1.0</code></td><td>Set the penalty strength</td></tr>
-              <tr><td><code>gamma="scale"</code></td><td>Pick gamma automatically from the data</td></tr>
-              <tr><td><code>fit()</code></td><td>Train the model</td></tr>
-              <tr><td><code>predict()</code></td><td>Predict an answer</td></tr>
-              <tr><td><code>accuracy_score()</code></td><td>Fraction of correct predictions</td></tr>
-            </table>
-            <p class="bnote">The pipeline learns scaling only from the training set. That prevents data leakage, where test data sneaks into training.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="bview" id="bv-metrics" hidden>
-        <div class="bhead"><button class="btn ghost bback">← All cards</button><h2>📏 How do we know our SVM is good?</h2></div>
-        <div class="acc">Spam test: 90 correct out of 100 emails → Accuracy = 90 / 100 × 100 = <b>90%</b></div>
-        <table class="btable">
-          <tr><th>Metric</th><th>Simple meaning</th></tr>
-          <tr><td><b>Accuracy</b></td><td>How often was the model correct overall?</td></tr>
-          <tr><td><b>Precision</b></td><td>Of emails called spam, how many really were spam?</td></tr>
-          <tr><td><b>Recall</b></td><td>Of all actual spam emails, how many did we catch?</td></tr>
-          <tr><td><b>F1-score</b></td><td>One balanced score combining precision and recall</td></tr>
-          <tr><td><b>Confusion matrix</b></td><td>A table of correct and incorrect classifications</td></tr>
-        </table>
-        <p class="bnote">When one class is rare, like fraud, precision and recall tell you more than accuracy alone. For SVR (predicting numbers), use MAE, RMSE and R².</p>
-      </div>
-
-      <div class="bview" id="bv-compare" hidden>
-        <div class="bhead"><button class="btn ghost bback">← All cards</button><h2>⚖️ SVM vs other algorithms</h2></div>
-        <table class="btable">
-          <tr><th>Algorithm</th><th>How it learns</th></tr>
-          <tr><td><b>Logistic Regression</b></td><td>Learns a straight-line score and turns it into class probabilities</td></tr>
-          <tr><td><b>Decision Tree</b></td><td>Learns a series of yes/no questions</td></tr>
-          <tr><td><b>KNN</b></td><td>Looks at the closest known examples</td></tr>
-          <tr><td><b>SVM</b></td><td>Learns the boundary with the widest margin</td></tr>
-          <tr><td><b>Neural Network</b></td><td>Learns many layers of transformations</td></tr>
-        </table>
-        <p class="bnote">No algorithm is automatically best for every dataset. Linear SVM often works very well for text; tree ensembles can be handier for some tables of data.</p>
-      </div>
-    </div>
+    <!-- Live Demo screens use the existing slide layout. -->
+    <div id="ld-stage-mount"></div>
   </section>
 
   <aside class="panel">
@@ -840,11 +719,11 @@ prediction = model.predict(new_flower)</pre>
       <p id="tcTeaser"></p>
     </div>
 
-    <!-- Chapter 1 · Max Learns to See -->
+    <!-- Chapter 1 · SVM Fundamentals -->
     <div class="lvl itext" data-step="cover">
-      <p>Max is a friendly robot who just joined our college.</p>
-      <p>His mission: spot students who might need extra help before the exam.</p>
-      <p class="lead">Can a robot predict who will pass?</p>
+      <p>SVM is a supervised machine learning method.</p>
+      <p>This example uses study hours and attendance to predict student outcomes.</p>
+      <p class="lead">How does SVM classify new data?</p>
     </div>
 
     <div class="lvl itext" data-step="ml">
@@ -853,14 +732,14 @@ prediction = model.predict(new_flower)</pre>
     </div>
 
     <div class="lvl itext" data-step="features">
-      <p class="lead">Max doesn't see students. He sees numbers.</p>
+      <p class="lead">Each student is represented by numerical features.</p>
       <p><b class="hl">Features</b> = what we measure (hours studied, classes attended).</p>
       <p><b class="hl">Label</b> = the answer we already know (<b class="pass">Pass</b> or <b class="fail">Fail</b>).</p>
       <div class="row"><button class="btn ghost" id="replayF">↺ Replay</button></div>
     </div>
 
     <div class="lvl itext" data-step="supervised">
-      <p><b class="hl">Supervised learning</b>: Max learns from examples that already have the right answer.</p>
+      <p><b class="hl">Supervised learning</b>: the model learns from examples with known labels.</p>
       <p><b class="hl">Classification</b> predicts a category: Pass or Fail.</p>
       <p><b class="hl">Regression</b> predicts a number: exam marks.</p>
     </div>
@@ -881,17 +760,17 @@ prediction = model.predict(new_flower)</pre>
     <div class="lvl itext" data-step="hyper">
       <p>A <b class="hl">hyperplane</b> is the boundary SVM uses to separate groups.</p>
       <p>1D: a point · 2D: a line · 3D: a plane · 4D+: a hyperplane.</p>
-      <div class="handover" data-next="1">Max can draw many lines… but which one is the best?<small class="hand"></small></div>
+      <div class="handover" data-next="1">Many boundaries separate the classes. Which one gives the largest margin?<small class="hand"></small></div>
     </div>
 
-    <!-- Chapter 2 · Max Finds the Best Road -->
+    <!-- Chapter 2 · Margins and Optimisation -->
     <div class="lvl" data-step="l1">
       <button class="question ask" id="ask1">Which line is the best?<small id="ask1hint">Click to reveal</small></button>
       <div class="callout reveal" id="ans1"></div>
       <p class="status" id="s1"></p>
       <div class="row">
         <button class="btn primary" id="others">Show other roads</button>
-        <button class="btn ghost" id="play1">🛝 Playground test</button>
+        <button class="btn ghost" id="play1">Compare margins</button>
         <button class="btn ghost" data-reset="1">↺ Reset</button>
       </div>
     </div>
@@ -905,7 +784,7 @@ prediction = model.predict(new_flower)</pre>
       </div>
       <p class="hint" id="hint2"></p>
       <div class="row">
-        <button class="btn primary" id="svm2">✨ Let SVM Try</button>
+        <button class="btn primary" id="svm2">Fit SVM</button>
         <button class="btn ghost" data-reset="2">↺ Reset</button>
       </div>
       <div class="legend">
@@ -919,7 +798,7 @@ prediction = model.predict(new_flower)</pre>
         </div>
         <div>
           <svg viewBox="0 0 38 22" aria-hidden="true"><circle cx="19" cy="11" r="10" fill="rgba(255,196,0,.4)"/><circle cx="19" cy="11" r="7.5" fill="none" stroke="#f5b400" stroke-width="2.5"/><circle cx="19" cy="11" r="5" fill="#1c62d6" stroke="#fff" stroke-width="1.5"/></svg>
-          <span>Glowing students = <b>support vectors</b></span>
+          <span>Highlighted points = <b>support vectors</b></span>
         </div>
       </div>
     </div>
@@ -949,20 +828,20 @@ prediction = model.predict(new_flower)</pre>
     </div>
 
     <div class="lvl itext" data-step="deep">
-      <p>The whole SVM idea in one line: a <b>wide road</b> plus a <b>penalty for rule-breakers</b>.</p>
+      <p>The whole SVM idea in one line: a <b>wide road</b> plus a <b>penalty for margin violations</b>.</p>
       <p class="note">Real SVM solves this mathematically. Our animations only show the idea.</p>
       <div class="row"><button class="btn primary" id="ddBtn">Reveal next</button></div>
     </div>
 
     <div class="lvl" data-step="l3">
       <div class="walk">
-        <button data-c="0" id="soft3"><b>🙂 Soft margin</b>“A small slip is okay.”</button>
-        <button data-c="100" id="hard3"><b>🚫 Hard margin</b>“Nobody in the walkway!”</button>
+        <button data-c="0" id="soft3"><b>Soft margin</b>Allows margin violations.</button>
+        <button data-c="100" id="hard3"><b>High C</b>Penalises violations more strongly.</button>
       </div>
       <div class="slider">
-        <label for="c3"><span style="color:var(--ink);font-size:1.05rem">C (strictness)</span><span id="cval"></span></label>
+        <label for="c3"><span style="color:var(--ink);font-size:1.05rem">C (penalty strength)</span><span id="cval"></span></label>
         <input type="range" id="c3" min="0" max="100" value="0">
-        <div class="ends"><span>Forgiving</span><span>Strict</span></div>
+        <div class="ends"><span>Lower penalty</span><span>Higher penalty</span></div>
       </div>
       <div class="readouts with-reset">
         <div><span class="lbl">Road width</span><span class="big" id="w3">0 m</span></div>
@@ -972,7 +851,7 @@ prediction = model.predict(new_flower)</pre>
       <div class="handover" data-next="2">But what if no straight road works at all?<small class="hand"></small></div>
     </div>
 
-    <!-- Chapter 3 · Max Faces the Impossible -->
+    <!-- Chapter 3 · Kernels and Applications -->
     <div class="lvl" data-step="l4">
       <p class="kline"><b class="hl">Kernel Trick</b>: add a new feature, like z&nbsp;=&nbsp;x²&nbsp;+&nbsp;y², to lift the points into 3D where a flat plane can separate them.</p>
       <p class="status" id="s4"></p>
@@ -983,7 +862,7 @@ prediction = model.predict(new_flower)</pre>
 
     <div class="lvl itext" data-step="kernels">
       <p>A <b class="hl">kernel</b> decides what shape the boundary can take.</p>
-      <p>Max picks the kernel that fits the pattern: straight, curved, or a flexible shape.</p>
+      <p>Choose a kernel suited to the data: linear, polynomial, or RBF.</p>
     </div>
 
     <div class="lvl" data-step="gamma">
@@ -997,7 +876,7 @@ prediction = model.predict(new_flower)</pre>
       <table class="cg">
         <tr><th></th><th>C</th><th>Gamma (γ)</th></tr>
         <tr><td>Controls</td><td>Penalty for breaking rules</td><td>How far influence reaches</td></tr>
-        <tr><td>High</td><td>Less tolerance</td><td>Very local, wiggly</td></tr>
+        <tr><td>High</td><td>Less tolerance</td><td>Very local, complex</td></tr>
         <tr><td>Low</td><td>More tolerance</td><td>Smooth, broad</td></tr>
         <tr><td>Used with</td><td>Soft-margin SVM</td><td>RBF, polynomial, sigmoid (not linear)</td></tr>
       </table>
@@ -1006,7 +885,7 @@ prediction = model.predict(new_flower)</pre>
     <div class="lvl itext" data-step="fit">
       <p><b class="hl">Underfitting</b>: too simple, misses the pattern.</p>
       <p><b class="hl">Overfitting</b>: memorises the training data, fails on new data.</p>
-      <p><b class="hl">Good fit</b>: learns the idea, works on new data.</p>
+      <p><b class="hl">Good fit</b>: captures the pattern and generalises to new data.</p>
     </div>
 
     <div class="lvl itext" data-step="real">
@@ -1016,13 +895,13 @@ prediction = model.predict(new_flower)</pre>
 
     <div class="lvl itext" data-step="pros">
       <p>Every tool has strengths and weaknesses.</p>
-      <p>Knowing both helps Max choose the right tool for the job.</p>
+      <p>Consider both when selecting a model for a specific task.</p>
     </div>
 
     <div class="lvl itext" data-step="final">
-      <p>Five steps take Max from data to a prediction.</p>
-      <p>Move the sliders: Max checks which side of his road a new student falls on.</p>
-      <div class="handover" data-next="3">Now let's see what you remember!<small class="hand"></small></div>
+      <p>Five steps take the model from data to prediction.</p>
+      <p>Move the sliders to see how the model classifies a new student example.</p>
+      <div class="handover" data-next="3">Review the key concepts.<small class="hand"></small></div>
     </div>
 
     <!-- Ending -->
@@ -1035,16 +914,12 @@ prediction = model.predict(new_flower)</pre>
     </div>
 
     <div class="lvl itext" data-step="closing">
-      <p>Thank you for joining Max's journey!</p>
-      <div class="row"><button class="btn primary" id="ideaBtn">Show the one idea</button></div>
+      <p>Thank you. Questions and discussion are welcome.</p>
+      <div class="row"><button class="btn primary" id="ideaBtn">Show key takeaway</button></div>
       <p class="note">Bonus cards come next, if there's time.</p>
     </div>
 
-    <!-- Bonus -->
-    <div class="lvl itext" data-step="bonus">
-      <p>Want to know more? Open a card if there's time.</p>
-      <p class="note">Each card has a ← button to come back.</p>
-    </div>
+    <div id="ld-panel-mount"></div>
 
     <div class="key" id="keybox"><b>Key idea</b><p id="key"></p></div>
   </aside>
@@ -1065,6 +940,8 @@ prediction = model.predict(new_flower)</pre>
   </div>
 </div>
 
+<script src="live-demo/data.js"></script>
+<script src="live-demo/demo.js"></script>
 <script>
 (() => {
 'use strict';
@@ -1076,7 +953,7 @@ const W = 1000, H = 640, CX = 500, CY = 320;   // map size in "world" units
 const RED = -1, BLUE = 1;
 const HOUSE_R = 14;
 const METRE = 10;          // world units per metre in the width readout
-const HARD_C = 1000;       // "no rule breaking" SVM for Level 2
+const HARD_C = 1000;       // large-C SVM for Level 2
 const C_MIN = 0.25, C_MAX = 15;
 const FONT = '"Segoe UI", system-ui, -apple-system, Arial, sans-serif';
 
@@ -1089,18 +966,18 @@ const COL = {
 const OTHER_COLORS = ['#7048e8', '#0ca678', '#f76707', '#d6336c', '#1098ad'];
 
 const TEXT = {
-  1: { title: 'Any Road Will Do?',
-       say: "Drag Max's road so the Fail students (red) are on one side and the Pass students (blue) on the other.",
+  1: { title: 'Comparing Decision Boundaries',
+       say: "Adjust the boundary to separate Fail examples (red) from Pass examples (blue).",
        key: 'Many roads split the two groups. So which one is the best?' },
-  2: { title: 'Finding the Best Road',
+  2: { title: 'Finding the Maximum Margin',
        say: 'A wider road is safer: it leaves the most space between the road and every student.',
        key: 'SVM finds the widest road. Only the students touching its edges, the support vectors, decide where it goes.' },
-  3: { title: 'The Troublemaker',
-       say: 'Arjun studied hard but still failed, so his red dot sits among the Pass students.',
-       key: 'Low C = forgiving. High C = strict.' },
-  4: { title: "Max's Playground Puzzle",
-       say: 'Red balls sit in the middle of the playground and blue balls surround them. No straight road works.',
-       key: "Kernel Trick = SVM's superpower: add a new feature so a flat cut works. Back on the map, it becomes a circle." },
+  3: { title: 'Outliers and Soft Margins',
+       say: 'Arjun is an outlier: a Fail example located among Pass examples.',
+       key: 'Low C = lower penalty. High C = higher penalty for margin violations.' },
+  4: { title: "Nonlinear Classification",
+       say: 'Red points form a central cluster surrounded by blue points. A straight boundary cannot separate them.',
+       key: "A feature mapping can make nonlinear data separable. Kernels compute similarities in the transformed space implicitly." },
 };
 
 /* =========================================================
@@ -1120,7 +997,7 @@ const TROUBLE_VILLAGES = [
   P(340, 330, RED), P(185, 545, RED), P(320, 500, RED), P(380, 160, RED), P(100, 580, RED),
   P(640, 250, BLUE), P(720, 330, BLUE), P(790, 190, BLUE), P(840, 300, BLUE), P(690, 460, BLUE), P(800, 420, BLUE),
   P(900, 360, BLUE), P(870, 520, BLUE), P(740, 560, BLUE), P(910, 200, BLUE), P(620, 560, BLUE), P(620, 390, BLUE),
-  P(700, 140, RED, true),   // the troublemaker
+  P(700, 140, RED, true),   // the outlier
 ];
 
 function rng(seed) { return () => (seed = (seed * 16807) % 2147483647) / 2147483647; }
@@ -1488,9 +1365,9 @@ function setText(el, t) { if (shown.get(el) !== t) { shown.set(el, t); el.textCo
 function setCls(el, cls) { if (el.className !== cls) el.className = cls; }
 
 /* =========================================================
-   Level 1: Any Road Will Do?
+   Level 1: Comparing Decision Boundaries
    ========================================================= */
-// The playground test: three parallel roads, only the middle one is equally far from both groups.
+// The margin comparison: three parallel roads, only the middle one is equally far from both groups.
 const PLAY_LINES = [[-0.75, 'Too close to red', COL.red, '#fff'], [0, 'Maximum margin', COL.gold, COL.ink], [0.75, 'Too close to blue', COL.blue, '#fff']];
 
 function draw1(s, now) {
@@ -1553,12 +1430,12 @@ function draw1(s, now) {
   setText($('s1'), s.play ? 'Best choice: the road is equally far from the nearest red and blue students.'
     : k ? `✗ ${k} student${k > 1 ? 's are' : ' is'} on the wrong side` : '✓ The road splits the two groups!');
   setCls($('s1'), 'status ' + (s.play || !k ? 'good' : 'bad'));
-  setText($('play1'), s.play ? 'Hide playground test' : '🛝 Playground test');
+  setText($('play1'), s.play ? 'Hide comparison' : 'Compare margins');
   setText($('others'), s.others ? 'Hide other roads' : 'Show other roads');
   setText($('ask1hint'), best ? 'Click to hide' : 'Click to reveal');
   $('ans1').classList.toggle('on', !!best);
   if (best) {
-    let ans = '★ The best line leaves the biggest gap to the closest students on both sides.';
+    let ans = 'The best line leaves the biggest gap to the closest students on both sides.';
     if (s.others) {
       const gap = s.others.map(r => Math.min(...s.pts.map(p => Math.abs(r.n.x * p.x + r.n.y * p.y - r.c))));
       ans += ` Of roads A–E, road ${s.others[gap.indexOf(Math.max(...gap))].label} comes closest.`;
@@ -1586,7 +1463,7 @@ function draw2(s, now, dt) {
     for (const p of s.pts) drawHouse(p, { wrong: cl.wrong.has(p) });
     drawHandles(s.h, hover);
     setText($('hint2'), ok ? 'Drag the white handles. Can you make the road wider?'
-                           : 'Some students are on the wrong side, so there is no road. Move it!');
+                           : 'Some examples are misclassified. Adjust the boundary to separate the classes.');
   } else {
     const tgt = roadTarget(s.svm.n, s.svm.c, s.svm.hw);
     s.disp = approach(s.disp, tgt, 1 - Math.exp(-dt / s.tau));
@@ -1614,11 +1491,11 @@ function draw2(s, now, dt) {
   setText($('sub2'), s.mode === 'svm' && s.revealed
     ? `Your best: ${fmt(s.best)}  ·  SVM: ${fmt(2 * s.svm.hw)}`
     : `Your best: ${fmt(s.best)}`);
-  setText($('svm2'), s.mode === 'svm' ? '↺ My turn' : '✨ Let SVM Try');
+  setText($('svm2'), s.mode === 'svm' ? '↺ Adjust manually' : 'Fit SVM');
 }
 
 /* =========================================================
-   Level 3: The Troublemaker
+   Level 3: Outliers and Soft Margins
    ========================================================= */
 function draw3(s, now, dt) {
   const tgt = roadTarget(s.svm.n, s.svm.c, s.svm.hw);
@@ -1633,25 +1510,25 @@ function draw3(s, now, dt) {
   const tm = s.pts.find(p => p.tm);
   for (const p of s.pts) if (!p.tm) drawHouse(p, { wrong: s.svm.f(p) * p.c < 0 });
   drawHouse(tm, { wrong: s.svm.f(tm) * tm.c < 0 });
-  pill('Arjun · troublemaker', tm.x, tm.y - 38, { size: 17 });
+  pill('Arjun · outlier', tm.x, tm.y - 38, { size: 17 });
 
   setText($('w3'), fmt(2 * L.hw));
   const C = s.C;
   setText($('cval'), `C = ${C < 1 ? C.toFixed(2) : C < 10 ? C.toFixed(1) : C.toFixed(0)}`);
   const yf = s.svm.f(tm) * tm.c;
   const el = $('tm3');
-  if (yf >= 0.98) { setText(el, 'Fits ✓ The road squeezes past him'); setCls(el, 'mid good'); }
-  else if (yf >= 0) { setText(el, 'Inside the road ⚠'); setCls(el, 'mid warn'); }
-  else { setText(el, 'Forgiven: allowed on the wrong side'); setCls(el, 'mid'); }
+  if (yf >= 0.98) { setText(el, 'Correctly classified, outside the margin'); setCls(el, 'mid good'); }
+  else if (yf >= 0) { setText(el, 'Inside the margin'); setCls(el, 'mid warn'); }
+  else { setText(el, 'Misclassified: penalised by C'); setCls(el, 'mid'); }
   $('soft3').classList.toggle('on', s.slider <= 33);
   $('hard3').classList.toggle('on', s.slider >= 67);
 }
 
 /* =========================================================
-   Level 4: The Impossible Level (kernel trick)
+   Level 4: Nonlinear Classification (kernel trick)
    ========================================================= */
 const TILT = 38 * Math.PI / 180;
-const Z_SCALE = 240;   // z = (x² + y²) / 240 keeps the tallest ball on screen
+const Z_SCALE = 240;   // z = (x² + y²) / 240 keeps the highest point on screen
 
 function view3(s, now, dt) {
   let V;
@@ -1734,7 +1611,7 @@ function draw3D(s, V) {
 
   if (V.tilt > 0.4) {
     ctx.save(); ctx.globalAlpha = clamp01((V.tilt - 0.4) / 0.4);
-    pill('✨ Kernel Trick', 26, 38, { bg: COL.gold, fg: COL.ink, size: 22, align: 'left' });
+    pill('Kernel Trick', 26, 38, { bg: COL.gold, fg: COL.ink, size: 22, align: 'left' });
     caption('new feature: height z = x² + y²', 30, 82);
     if (s.phase === 'lifted') caption('drag to spin', 30, 112, 16);
     ctx.restore();
@@ -1764,8 +1641,8 @@ function drawRing(s, now) {
     const touching = p.c === RED ? r > s.rIn - 0.5 : r < s.rOut + 0.5;
     drawHouse(p, { glow: a >= 1 && touching });
   }
-  pill('✨ Kernel Trick', 26, 38, { bg: COL.gold, fg: COL.ink, size: 22, align: 'left' });
-  caption('the flat cut becomes a circle on the playground', 30, 82);
+  pill('Kernel Trick', 26, 38, { bg: COL.gold, fg: COL.ink, size: 22, align: 'left' });
+  caption('the separating plane maps to a circle in 2D', 30, 82);
 }
 
 function draw4(s, now, dt) {
@@ -1777,18 +1654,18 @@ function draw4(s, now, dt) {
     ctx.save(); clipMap(); drawTint(n, c, cl.orient); drawThinRoad(n, c); ctx.restore();
     for (const p of s.pts) drawHouse(p, { wrong: cl.wrong.has(p) });
     drawHandles(s.h, hover);
-    setText(st, `✗ ${cl.wrong.size} balls on the wrong side. No straight road works!`);
+    setText(st, `✗ ${cl.wrong.size} points on the wrong side. No straight boundary separates these classes.`);
     setCls(st, 'status bad');
   } else if (s.phase === 'ring') {
     drawRing(s, now);
-    setText(st, '✓ Back on the playground, the flat cut is a circle!');
+    setText(st, '✓ The separating plane corresponds to a circular boundary in 2D.');
     setCls(st, 'status good');
   } else {
     draw3D(s, view3(s, now, dt));
     if (s.phase === 'ring') return;   // just finished dropping; draw the ring next frame
-    setText(st, { lifting: 'Lifting: each ball rises to height z = x² + y²…',
-                  lifted: '✓ Red balls stay low, blue balls rise high: a flat plane now splits them!',
-                  dropping: 'Bringing the balls back down…' }[s.phase]);
+    setText(st, { lifting: 'Lifting: each point rises to height z = x² + y²…',
+                  lifted: '✓ Red points stay low, blue points rise high: a plane separates the classes.',
+                  dropping: 'Bringing the points back down…' }[s.phase]);
     setCls(st, 'status ' + (s.phase === 'lifted' ? 'good' : ''));
   }
   setText(btn, { flat: '⬆ Lift to 3D', lifting: '⬆ Lifting…', lifted: '⬇ Back to the map', dropping: '⬇ Landing…', ring: '↺ Replay' }[s.phase]);
@@ -1796,7 +1673,7 @@ function draw4(s, now, dt) {
 }
 
 /* =========================================================
-   Max's students: will they PASS or FAIL? (graph screens)
+   Student outcome classification: PASS or FAIL (graph screens)
    ========================================================= */
 const PASS_COL = COL.blue, FAIL_COL = COL.red;
 
@@ -1917,7 +1794,7 @@ function drawFeatures(s, now) {
   drawMapBg();
   drawAxes();
 
-  // the table Max is given
+  // the training data table
   rr(X, Y, 300, RH * (TABLE.length + 1) + 10, 14);
   ctx.fillStyle = 'rgba(255,255,255,0.96)'; ctx.fill();
   ctx.strokeStyle = COL.mapEdge; ctx.lineWidth = 2; ctx.stroke();
@@ -2132,10 +2009,10 @@ const QUIZ = [
     why: 'They are the training points closest to the boundary, and they decide where it goes.' },
   { q: 'What is a kernel used for?',
     opts: ['Deleting noisy data', 'Increasing accuracy to 100%', 'Learning nonlinear boundaries'], a: 2,
-    why: 'Kernels let SVM learn curved, nonlinear boundaries, like the circle on the playground.' },
+    why: 'Kernels let SVM learn curved, nonlinear boundaries, such as a circular decision boundary.' },
   { q: 'What happens with a very high C?',
-    opts: ['Violations become more costly', 'The model becomes more forgiving', 'The dataset becomes bigger'], a: 0,
-    why: 'High C punishes breaking the rules more, so SVM becomes strict.' },
+    opts: ['Violations become more costly', 'Margin violations become less costly', 'The dataset becomes bigger'], a: 0,
+    why: 'High C assigns a larger penalty to margin violations.' },
   { q: 'What does SVR predict?',
     opts: ['Only two classes', 'Numerical values', 'Only flower names'], a: 1,
     why: 'SVR is the regression version of SVM: it predicts numbers, like exam marks.' },
@@ -2148,14 +2025,14 @@ function renderQuiz() {
   const right = QUIZ.filter((q, k) => QZ.picks[k] === q.a).length;
   $('qNum').textContent = done ? 'Your score' : `Question ${QZ.i + 1} of ${QUIZ.length}`;
   if (done) {
-    $('qText').textContent = `You got ${right} out of ${QUIZ.length}!`;
+    $('qText').textContent = `Result: ${right} out of ${QUIZ.length}`;
     $('qOpts').className = 'review';
     $('qOpts').innerHTML = QUIZ.map((q, k) => {
       const ok = QZ.picks[k] === q.a;
       return `<div><b class="${ok ? 'good' : 'bad'}">${ok ? '✓' : '✗'}</b><span>${q.q}<small>${q.opts[q.a]}</small></span></div>`;
     }).join('');
-    $('qWhy').textContent = right === QUIZ.length ? 'Perfect! Max is proud of you. 🎉'
-      : right >= 3 ? 'Great job! You know how Max builds the widest road.' : 'Good try! Remember: SVM builds the widest road.';
+    $('qWhy').textContent = right === QUIZ.length ? 'All answers correct. The key SVM concepts are covered.'
+      : right >= 3 ? 'Review the explanations for any missed questions.' : 'Review decision boundaries, margins and kernels, then try again.';
     $('qNext').textContent = '↺ Try again';
     $('qNext').hidden = false;
   } else {
@@ -2249,7 +2126,7 @@ function drawGamma() {
   pill('Conceptual illustration', 26, 38, { bg: 'rgba(23,32,46,0.78)', size: 16, align: 'left' });
   setText($('gval'), `γ = ${GM.gamma < 1 ? GM.gamma.toFixed(2) : GM.gamma.toFixed(1)}`);
   setText($('gword'), GM.gamma < 0.6 ? 'Low γ: wide influence, smooth boundary'
-    : GM.gamma < 4 ? 'Medium γ: a balance of detail and smoothness' : 'High γ: narrow influence, very wiggly');
+    : GM.gamma < 4 ? 'Medium γ: a balance of detail and smoothness' : 'High γ: narrow influence, more complex');
 }
 
 /* =========================================================
@@ -2262,7 +2139,7 @@ function setTab(tab) {
   document.querySelectorAll('[data-pane]').forEach(el => { el.hidden = el.dataset.pane !== tab; });
 }
 
-// Max's learned road for the students, in hours/classes units: w₁·hours + w₂·classes + b
+// The learned SVM boundary for the students, in hours/classes units: w₁·hours + w₂·classes + b
 const MW = [ISVM.n.x * 50 / ISVM.hw, -ISVM.n.y * 50 / ISVM.hw, ISVM.f({ x: GRAPH.x0, y: GRAPH.y1 })];
 const round2 = v => String(Math.round(v * 100) / 100);
 const MINI = (x, y) => [20 + (x - GRAPH.x0) * 0.38, 20 + (y - GRAPH.y0) * 0.38];   // graph → mini SVG
@@ -2296,10 +2173,10 @@ function mysteryUpdate() {
   $('mHv').textContent = h;
   $('mCv').textContent = c;
   $('mCalc').textContent = `${round2(MW[0])}(${h}) + ${round2(MW[1])}(${c}) ${MW[2] < 0 ? '−' : '+'} ${round2(Math.abs(MW[2]))} = ${signed(Math.round(r * 10) / 10)}`;
-  const close = Math.abs(r) < 1 ? 'Close call: inside the road (the margin), so Max is less sure.' : 'Clear case: outside the road.';
-  $('mOut').innerHTML = r > 0 ? `<span class="pass">Max predicts: PASS ✓</span><small>${close}</small>`
-    : r < 0 ? `<span class="fail">Max predicts: needs extra help 📚</span><small>${close}</small>`
-    : `Right on the line: Max can't decide 🤔<small>A prediction is a best guess, not a promise.</small>`;
+  const close = Math.abs(r) < 1 ? 'Inside the margin: close to the decision boundary.' : 'Outside the margin.';
+  $('mOut').innerHTML = r > 0 ? `<span class="pass">Predicted class: Pass</span><small>${close}</small>`
+    : r < 0 ? `<span class="fail">Predicted class: Fail</span><small>${close}</small>`
+    : `On the decision boundary<small>Predictions are model estimates, not certainties.</small>`;
   $('mDot').setAttribute('cx', x); $('mDot').setAttribute('cy', y);
   $('mQ').setAttribute('x', x); $('mQ').setAttribute('y', y + 4);
 }
@@ -2503,34 +2380,34 @@ document.querySelectorAll('[data-reset]').forEach(b => b.addEventListener('click
 }));
 
 /* =========================================================
-   The story: chapters, screens, presenters
+   Presentation: chapters, screens, presenters
    ========================================================= */
 const NAMES = [0, 1, 2].map(i => (Array.isArray(window.PRESENTERS) && window.PRESENTERS[i]) || `Presenter ${i + 1}`);
 const CHAPTERS = [
-  { label: 'Chapter 1', name: 'Max Learns to See', color: '#1c62d6', who: NAMES[0],
-    teaser: 'How Max turns students into numbers, and what SVM is.' },
-  { label: 'Chapter 2', name: 'Max Finds the Best Road', color: '#e8590c', who: NAMES[1],
-    teaser: 'How SVM picks the widest road, and the maths behind it.' },
-  { label: 'Chapter 3', name: 'Max Faces the Impossible', color: '#7048e8', who: NAMES[2],
+  { label: 'Chapter 1', name: 'SVM Fundamentals', color: '#1c62d6', who: NAMES[0],
+    teaser: 'Machine learning, features, labels and the SVM decision boundary.' },
+  { label: 'Chapter 2', name: 'Margins and Optimisation', color: '#e8590c', who: NAMES[1],
+    teaser: 'Maximum margins, support vectors and the optimisation objective.' },
+  { label: 'Chapter 3', name: 'Kernels and Applications', color: '#7048e8', who: NAMES[2],
     teaser: 'Curved boundaries, tuning, and SVM in the real world.' },
-  { label: 'Ending', name: 'Quiz and Goodbye', color: '#2f9e44', who: 'All presenters' },
-  { label: 'Bonus', name: 'Want to Know More?', color: '#5a6577', who: 'If time allows' },
+  { label: 'Ending', name: 'Review and Summary', color: '#2f9e44', who: 'All presenters' },
+  { label: 'Live Demo', name: 'Try It with Real Python', color: '#0b827c', who: 'All presenters' },
 ];
 
 // Every screen: its chapter, what fills the stage (an HTML slide, a canvas drawing, or a level),
 // and 2–3 presenter talking points (press N).
 const STEPS = [
   { id: 'ch1', ch: 0, slide: 'title', notes: [
-    'Introduce yourself and the story: today we follow Max, a robot who just joined our college.',
-    'Chapter 1 gives Max the basics: machine learning, features and labels, and what SVM is.'] },
-  { id: 'cover', ch: 0, slide: 'cover', title: 'Meet Max', notes: [
-    "Max's mission: predict which students might need extra help before the exam.",
-    'Hook: can a robot really predict who will pass? By the end of today, the class will know how.',
-    "Max's tool is SVM: the Support Vector Machine."] },
+    'Introduce yourself and the topic: Support Vector Machines, illustrated through student outcome classification.',
+    'Chapter 1 covers machine learning, features and labels, and the definition of SVM.'] },
+  { id: 'cover', ch: 0, slide: 'cover', title: 'Introduction to SVM', notes: [
+    "Example task: predict student outcomes from study hours and attendance.",
+    'Explain how a model learns from labeled examples and applies a decision boundary to new data.',
+    "Introduce SVM: the Support Vector Machine."] },
   { id: 'ml', ch: 0, slide: 'ml', title: 'What is Machine Learning?', notes: [
     'Traditional programming: we write the rules ourselves.',
     'Machine learning: we give the computer examples, and it learns useful rules from them.',
-    'Like a kid shown 100 apples and oranges: after practice, they name a new fruit because they learned the patterns.'] },
+    'A classifier trained on labeled apples and oranges uses their features to classify an unseen fruit.'] },
   { id: 'features', ch: 0, draw: drawFeatures, title: 'Features and Labels', notes: [
     'Features (X) are the information the machine uses: hours studied and classes attended.',
     'The label (y) is the correct answer we want to predict: Pass or Fail.',
@@ -2544,16 +2421,16 @@ const STEPS = [
     'It asks two questions: where should I draw the line, and how can I leave the largest possible safety gap?',
     'That second question is what makes SVM special. Next or Space reveals Support, Vector, Machine.'] },
   { id: 'hyper', ch: 0, slide: 'hyper', title: 'What is a Hyperplane?', notes: [
-    "Don't be scared by the word: a hyperplane is simply the boundary SVM uses to separate data.",
+    "A hyperplane is the boundary a linear SVM uses to separate data.",
     '1D: a point. 2D: a line. 3D: a flat plane. 4D and more: a hyperplane.',
-    "Exam answer: \"the decision boundary that separates classes in the feature space.\" Hand over: Max can draw many lines… but which one is the best?"] },
+    "Exam answer: \"the decision boundary that separates classes in the feature space.\" Hand over: Many boundaries separate the classes. Which one gives the largest margin?"] },
 
   { id: 'ch2', ch: 1, slide: 'title', notes: [
-    'Recap: Max can draw many lines between Pass and Fail students… but which one is the best?',
-    'Chapter 2: how SVM picks the best road, the maths behind it, and what to do with a troublemaker.'] },
+    'Recap: Many boundaries separate Pass and Fail examples; compare them by their margins.',
+    'Chapter 2: maximum-margin separation, the mathematical objective, and handling outliers.'] },
   { id: 'l1', ch: 1, level: 1, notes: [
     'Many roads split the two groups. Click "Show other roads" and let the class vote for A–E.',
-    'Playground test: a line too close to red or too close to blue is risky. The best choice is equally far from the nearest red and blue students.',
+    'Margin comparison: a line too close to red or too close to blue is risky. The best choice is equally far from the nearest red and blue students.',
     'The margin is the distance from the boundary to the closest points, measured straight across (perpendicular).'] },
   { id: 'l2', ch: 1, level: 2, notes: [
     'SVM wants the largest possible margin: like a wide road, it leaves more space on both sides.',
@@ -2570,33 +2447,33 @@ const STEPS = [
   { id: 'deep', ch: 1, slide: 'deep', title: "SVM's Goal in One Line (optional)",
     stepper: () => (DD.k < 4 ? (DD.k++, renderDeep(), true) : false), notes: [
     'Optional: skip this screen if you are short on time.',
-    'Read it as: a wide road (½‖w‖²) plus a penalty for rule-breaking (C·Σξᵢ). Next or Space reveals one meaning at a time.',
+    'Read it as: a wide road (½‖w‖²) plus a penalty for margin violations (C·Σξᵢ). Next or Space reveals one meaning at a time.',
     'Real SVM solves this optimisation mathematically. The animations on this site only show the idea.'] },
   { id: 'l3', ch: 1, level: 3, notes: [
-    'Hard margin, like a classroom walkway: "No student may step into the walkway!" It only works when perfect separation is possible, and it is very sensitive to unusual points like Arjun.',
-    'Soft margin: "Try your best, a small slip is okay." It allows some violations, which suits real data. In soft margin, support vectors can also be points inside the margin or on the wrong side.',
-    'C is how strongly the teacher punishes rule-breaking: low C = forgiving, high C = strict. Hand over: but what if no straight road works at all?'] },
+    'Hard-margin SVM requires perfect separation without margin violations and is sensitive to outliers. The slider demonstrates finite C values in a soft-margin model.',
+    'Soft-margin SVM permits margin violations with a penalty, making it suitable for overlapping or noisy data. In soft margin, support vectors can also be points inside the margin or on the wrong side.',
+    'C controls the penalty for margin violations: lower C permits more violations, while higher C penalises them more strongly. Hand over: but what if no straight road works at all?'] },
 
   { id: 'ch3', ch: 2, slide: 'title', notes: [
-    'Recap: Max can find the widest road, and he knows how to deal with a troublemaker like Arjun.',
+    'Recap: SVM balances margin width and violations, including outliers such as Arjun.',
     'Chapter 3: what to do when no straight road works, how to tune SVM, and where it is used in the real world.'] },
   { id: 'l4', ch: 2, level: 4, notes: [
-    "Max's new puzzle at the playground: red balls in the middle, blue balls in a circle around them. No straight line works; this is called non-linearly separable data.",
-    'Add a new feature z = x² + y² and lift each ball to that height. Red balls near the centre stay low, blue balls rise high, and a flat plane separates them. Back in 2D, the cut is a circle.',
-    "The kernel trick lets SVM act as if it works in this higher dimension without calculating every new coordinate, which saves computation. Kernel trick = SVM's superpower."] },
+    "Consider a central red cluster surrounded by blue points. No straight boundary separates the classes; this is non-linearly separable data.",
+    'Add a new feature z = x² + y² and lift each point to that height. Red points near the centre stay low, blue points rise high, and a flat plane separates them. Back in 2D, the cut is a circle.',
+    "The kernel trick lets SVM act as if it works in this higher dimension without calculating every new coordinate, which saves computation. This is the kernel trick."] },
   { id: 'kernels', ch: 2, slide: 'kernels', title: "SVM's Kernel Toolbox", notes: [
     'Linear: a straight line or flat boundary. The best starting point for simple or high-dimensional data, such as text classification.',
     'Polynomial: curved boundaries. RBF (Gaussian): flexible nonlinear boundaries, like red in the middle and blue around; a popular default when the pattern is not a straight line.',
     'Sigmoid: loosely related to neural networks. Less common in practice, and not a valid kernel for every parameter setting.'] },
   { id: 'gamma', ch: 2, draw: drawGamma, title: 'Gamma: Circles of Influence', notes: [
     'Gamma is a setting mainly for the RBF kernel: imagine each training point has a circle of influence.',
-    'Low gamma: wide influence, a smoother boundary. High gamma: narrow influence, very local and wiggly. Drag the slider to show both ends.',
-    "Don't confuse C and gamma: C is the penalty for breaking the rules; gamma is how far each point's influence reaches. The picture is a conceptual illustration."] },
+    'Low gamma: wide influence, a smoother boundary. High gamma: narrow influence, very local and complex. Drag the slider to show both ends.',
+    "Don't confuse C and gamma: C is the penalty for margin violations; gamma is how far each point's influence reaches. The picture is a conceptual illustration."] },
   { id: 'fit', ch: 2, slide: 'fit', title: 'Overfitting vs Underfitting', notes: [
-    "Underfitting is like learning only three definitions: you can't answer harder questions.",
-    "Overfitting is like memorising last year's paper: you're stuck when a question changes slightly.",
-    'A good fit means you understood the concepts, so you can solve new questions. SVM balances this with its margin, C, kernel choice and gamma. The sketches are simplified, not fitted models.'] },
-  { id: 'real', ch: 2, slide: 'real', title: 'Max Goes into the Real World',
+    "Underfitting occurs when a model is too simple to capture the underlying pattern.",
+    "Overfitting occurs when a model fits training noise and performs poorly on unseen data.",
+    'A good fit captures the underlying pattern and generalises to unseen data. SVM balances this with its margin, C, kernel choice and gamma. The sketches are simplified, not fitted models.'] },
+  { id: 'real', ch: 2, slide: 'real', title: 'SVM Types and Applications',
     stepper: () => (RW.tab === 'types' ? (setTab('uses'), true) : false), notes: [
     'Types: SVC classifies; SVR predicts numbers and keeps errors inside a tube around the line (the epsilon-insensitive loss); One-Class SVM learns what normal looks like and flags anomalies.',
     'More than two groups: train several two-group SVMs, one-vs-rest (one per class) or one-vs-one (one per pair). Next or Space switches to real-world uses.',
@@ -2605,9 +2482,9 @@ const STEPS = [
     'Advantages: works well in many high-dimensional problems, uses a margin-based principle, kernels handle nonlinear patterns, works well on small and medium datasets.',
     'Disadvantages: kernel SVMs can be slow on very large datasets, are sensitive to feature scaling, need kernel and parameter tuning, and nonlinear models are hard to interpret.',
     "No algorithm is automatically best for every dataset. For example, linear SVM often works very well for text."] },
-  { id: 'final', ch: 2, slide: 'final', title: 'How SVM Finds the Best Road', notes: [
+  { id: 'final', ch: 2, slide: 'final', title: 'From Data to Prediction', notes: [
     'The full recipe: collect data, extract features and labels, split into training and test data, scale the features, choose a kernel with C and gamma, train, test, then predict.',
-    "Mystery student: move the sliders. Max checks which side of his road the new student falls on; inside the road (the margin) means a close call.",
+    "Prediction example: move the sliders to evaluate a new student. The sign of the decision function determines the predicted class; points inside the margin lie near the boundary.",
     'A prediction is a best guess from the pattern, not a certainty. Hand over: now all three presenters together for the quiz.'] },
 
   { id: 'quiz', ch: 3, slide: 'quiz', title: 'Quick Quiz', stepper: () => {
@@ -2617,16 +2494,13 @@ const STEPS = [
     }, notes: [
     'All presenters: read each question, let the class answer out loud, then click (or press A, B or C).',
     'Each answer shows the reason straight away. Next or Space moves to the next question.'] },
-  { id: 'closing', ch: 3, slide: 'closing', title: "Max's 30-Second Explanation",
+  { id: 'closing', ch: 3, slide: 'closing', title: "SVM Summary",
     stepper: () => (!CL.idea ? (CL.idea = true, renderClosing(), true) : false), notes: [
-    "Read Max's 30-second explanation aloud.",
+    "Summarise the decision boundary, margin, support vectors and kernels.",
     'Then reveal the one idea that connects everything (Next or Space): balance separation, margin size and allowed errors to predict unseen data well.',
     'Thank the class, and open the bonus cards if there is time.'] },
 
-  { id: 'bonus', ch: 4, slide: 'bonus', title: 'Want to Know More?', notes: [
-    'Only if time allows. Click a card to open it, and ← to come back.',
-    'Python: the Iris example uses a pipeline with StandardScaler and SVC(kernel="rbf"). The pipeline learns scaling only from the training set, which prevents data leakage.',
-    'Metrics: accuracy is not enough when one class is rare (like fraud); use precision, recall and F1. For SVR, use MAE, RMSE and R².'] },
+  ...window.LiveDemo.steps,
 ];
 
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -2650,7 +2524,7 @@ function goStep(i) {
   if (isTitle) {
     $('tcNum').textContent = ch.label;
     $('tcName').textContent = ch.name;
-    $('tcWho').textContent = `🎤 Presented by ${ch.who}`;
+    $('tcWho').textContent = `Presented by ${ch.who}`;
     $('tcTeaser').textContent = ch.teaser;
   }
   $('tag').textContent = isTitle ? `${ch.label} of 3` : `${ch.label} · ${ch.who}`;
@@ -2665,7 +2539,7 @@ function goStep(i) {
   if (cur.slide === 'real') setTab(RW.tab);
   if (cur.slide === 'final') mysteryUpdate();
   if (cur.slide === 'closing') renderClosing();
-  if (cur.slide === 'bonus') showBonus(null);
+  window.LiveDemo.enter(cur.id);
   $('gs').value = GM.slider;
   $('c3').value = S[3].slider;
   syncSliders();
@@ -2688,13 +2562,14 @@ function startOver() {
   DD.k = 0;
   RW.tab = 'types';
   CL.idea = false;
+  window.LiveDemo.reset();
   goStep(0);
 }
 
 // progress bar: one segment per screen, coloured by chapter
 function renderProgress() {
   const ch = CHAPTERS[cur.ch];
-  $('plabel').innerHTML = `<b>${esc(ch.label)}</b><span>${esc(ch.name)} · 🎤 ${esc(ch.who)}</span>`;
+  $('plabel').innerHTML = `<b>${esc(ch.label)}</b><span>${esc(ch.name)} · ${esc(ch.who)}</span>`;
   $('segs').innerHTML = STEPS.map((s, i) =>
     (i && s.ch !== STEPS[i - 1].ch ? '<i class="gap"></i>' : '') +
     `<button class="seg${i < step ? ' done' : ''}${i === step ? ' on' : ''}" data-i="${i}" style="--c:${CHAPTERS[s.ch].color}"` +
@@ -2705,7 +2580,7 @@ function renderProgress() {
 function renderNotes() {
   $('notes').hidden = !notesOn;
   if (!notesOn) return;
-  $('notesTitle').textContent = `🗒 Presenter notes · ${stepTitle(cur)}`;
+  $('notesTitle').textContent = `Presenter notes · ${stepTitle(cur)}`;
   $('notesList').innerHTML = (cur.notes || []).map(n => `<li>${esc(n)}</li>`).join('');
 }
 function toggleNotes() { notesOn = !notesOn; renderNotes(); }
@@ -2716,7 +2591,7 @@ function openMenu() {
     const items = STEPS.map((s, i) => [s, i]).filter(([s]) => s.ch === k);
     if (!items.length) return '';
     return `<div class="mch" style="--c:${ch.color}">` +
-      `<button class="mtitle" data-i="${items[0][1]}">${esc(ch.label)}: ${esc(ch.name)}<small>🎤 ${esc(ch.who)}</small></button>` +
+      `<button class="mtitle" data-i="${items[0][1]}">${esc(ch.label)}: ${esc(ch.name)}<small>${esc(ch.who)}</small></button>` +
       `<ol>${items.map(([s, i]) => `<li><button data-i="${i}"${i === step ? ' class="cur"' : ''}>${esc(s.slide === 'title' ? 'Title card' : stepTitle(s))}</button></li>`).join('')}</ol></div>`;
   }).join('');
   $('menu').hidden = false;
@@ -2727,7 +2602,7 @@ function closeMenu() { $('menu').hidden = true; }
 document.querySelectorAll('.handover').forEach(el => {
   const nc = CHAPTERS[+el.dataset.next];
   el.style.setProperty('--nc', nc.color);
-  el.querySelector('.hand').textContent = nc.label === 'Ending' ? '🎤 Now all three presenters together' : `🎤 Over to ${nc.who}`;
+  el.querySelector('.hand').textContent = nc.label === 'Ending' ? 'Now all three presenters together' : `Over to ${nc.who}`;
 });
 
 $('next').addEventListener('click', next);
