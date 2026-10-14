@@ -33,4 +33,8 @@ Presenter names are set in `window.PRESENTERS` at the top of `index.html`.
 | F | Full screen |
 | A–C or 1–3 | Answer a quiz question |
 
-The spoken script for every screen is in [`SCRIPT.md`](SCRIPT.md).
+## More files
+
+- [`SCRIPT.md`](SCRIPT.md): the spoken script for every screen.
+- [`PRESENTER-CHECKLIST.md`](PRESENTER-CHECKLIST.md): what to check before class, timing, and a Live Demo backup plan.
+- [`GLOSSARY.md`](GLOSSARY.md): the key SVM terms in plain language.
