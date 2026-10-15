@@ -10,7 +10,14 @@ from pathlib import Path
 import hashlib
 import io
 import json
+import sys
 import sklearn
+
+# Saved results must match what the browser would compute, so refuse other versions.
+EXPECTED_SKLEARN = "1.6.1"
+if sklearn.__version__ != EXPECTED_SKLEARN:
+    sys.exit(f"Need scikit-learn {EXPECTED_SKLEARN}, found {sklearn.__version__}. "
+             "Run: pip install -r live-demo/requirements.txt")
 
 ROOT = Path(__file__).resolve().parent
 sources = {key: (ROOT / filename).read_text(encoding="utf-8") for key, filename in
