@@ -387,6 +387,15 @@
     .panel { flex: none; overflow: visible; }
     .two, .four { grid-template-columns: 1fr 1fr; }
   }
+
+  /* ---------- reduced motion: skip the pop-in and fade effects when the OS asks ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: .01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .01ms !important;
+    }
+  }
 </style>
 <link rel="stylesheet" href="live-demo/demo.css">
 </head>
