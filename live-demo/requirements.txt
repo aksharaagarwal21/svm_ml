@@ -1,0 +1,3 @@
+# Only needed to regenerate data.js with generate_saved.py.
+# Keep this in step with the scikit-learn version in the Pyodide 0.27.7 runtime.
+scikit-learn==1.6.1

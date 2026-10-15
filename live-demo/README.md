@@ -29,9 +29,10 @@ measurements. The explicit estimator settings are in `race.py`.
 
 ## Reproduce saved results
 
-With local Python and scikit-learn 1.6.1 available, run:
+With local Python available, install the pinned scikit-learn 1.6.1 and run:
 
 ```sh
+pip install -r live-demo/requirements.txt
 python live-demo/generate_saved.py
 ```
 
