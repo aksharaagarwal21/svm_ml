@@ -32,6 +32,7 @@ Short on time? Skip the optional "SVM's Goal in One Line" screen in Chapter 2.
 |---|---|
 | → / Space / Page Down | Next step or screen |
 | ← / Page Up | Previous screen |
+| Home / End | First or last screen |
 | N | Show or hide presenter notes |
 | M | Jump to any chapter |
 | F | Full screen |

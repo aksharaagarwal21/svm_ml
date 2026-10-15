@@ -2640,6 +2640,8 @@ document.addEventListener('keydown', e => {
   }
   if (k === 'ArrowRight' || k === 'PageDown' || k === ' ') { next(); e.preventDefault(); }
   else if (k === 'ArrowLeft' || k === 'PageUp') { goStep(step - 1); e.preventDefault(); }
+  else if (k === 'Home') { goStep(0); e.preventDefault(); }
+  else if (k === 'End') { goStep(STEPS.length - 1); e.preventDefault(); }
   else if (k === 'f' || k === 'F') toggleFullscreen();
   else if (k === 'n' || k === 'N') toggleNotes();
   else if (k === 'm' || k === 'M') openMenu();

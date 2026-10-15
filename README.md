@@ -28,6 +28,7 @@ Presenter names are set in `window.PRESENTERS` at the top of `index.html`.
 |---|---|
 | → / Space / Page Down | Next step or screen |
 | ← / Page Up | Previous screen |
+| Home / End | First or last screen |
 | N | Show or hide presenter notes |
 | M | Menu to jump to any chapter |
 | F | Full screen |
