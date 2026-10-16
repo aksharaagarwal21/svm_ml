@@ -2676,6 +2676,12 @@ document.addEventListener('keydown', e => {
   else if (k === 'Escape' && notesOn) toggleNotes();
 });
 
+// follow a screen typed into the address bar (e.g. index.html#gamma) without needing a reload
+window.addEventListener('hashchange', () => {
+  const i = STEPS.findIndex(s => s.id === location.hash.slice(1));
+  if (i >= 0 && i !== step) goStep(i);
+});
+
 goStep(step);
 started = true;
 requestAnimationFrame(frame);

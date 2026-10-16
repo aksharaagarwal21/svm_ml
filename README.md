@@ -34,6 +34,8 @@ Presenter names are set in `window.PRESENTERS` at the top of `index.html`.
 | F | Full screen |
 | A–C or 1–3 | Answer a quiz question |
 
+The address bar always shows the current screen, for example `index.html#gamma`. Bookmark it to come back to that screen, or type another screen's name after the `#` to jump there.
+
 ## More files
 
 - [`SCRIPT.md`](SCRIPT.md): the spoken script for every screen.
