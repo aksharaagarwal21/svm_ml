@@ -2642,6 +2642,7 @@ document.addEventListener('click', e => { const b = e.target.closest('button'); 
 
 document.addEventListener('keydown', e => {
   const k = e.key;
+  if (e.ctrlKey || e.metaKey || e.altKey) return;   // leave browser shortcuts alone (Ctrl+F find, Alt+← back, …)
   if (!$('menu').hidden) {
     if (k === 'Escape' || k === 'm' || k === 'M') { closeMenu(); e.preventDefault(); }
     return;
