@@ -946,7 +946,7 @@
 
 <!-- chapter menu (M) -->
 <div class="menu" id="menu" hidden>
-  <div class="menu-card" role="dialog" aria-label="Chapter menu">
+  <div class="menu-card" role="dialog" aria-modal="true" aria-label="Chapter menu">
     <div class="menu-head"><h2>Jump to a chapter</h2><button class="btn ghost" id="menuClose" aria-label="Close menu">✕</button></div>
     <div class="menu-grid" id="menuGrid"></div>
     <div class="keys"><kbd>→</kbd> or <kbd>Space</kbd> next · <kbd>←</kbd> back · <kbd>N</kbd> presenter notes · <kbd>M</kbd> this menu · <kbd>F</kbd> full screen</div>
@@ -2557,7 +2557,7 @@ function goStep(i) {
   $('c3').value = S[3].slider;
   syncSliders();
   canvas.style.cursor = 'default';
-  $('menu').hidden = true;
+  closeMenu();
   renderProgress();
   renderNotes();
   history.replaceState(null, '', '#' + cur.id);
@@ -2608,8 +2608,21 @@ function openMenu() {
       `<ol>${items.map(([s, i]) => `<li><button data-i="${i}"${i === step ? ' class="cur"' : ''}>${esc(s.slide === 'title' ? 'Title card' : stepTitle(s))}</button></li>`).join('')}</ol></div>`;
   }).join('');
   $('menu').hidden = false;
+  ($('menuGrid').querySelector('.cur') || $('menuClose')).focus();   // keyboard users start on the current screen
 }
-function closeMenu() { $('menu').hidden = true; }
+function closeMenu() {
+  // drop focus from the hidden menu so Space keeps moving through the screens
+  if ($('menu').contains(document.activeElement)) document.activeElement.blur();
+  $('menu').hidden = true;
+}
+// Tab and Shift+Tab wrap around inside the open menu instead of reaching the page behind it
+function trapMenuTab(e) {
+  const items = [...$('menu').querySelectorAll('button')], first = items[0], last = items[items.length - 1];
+  if (!$('menu').contains(document.activeElement) || document.activeElement === (e.shiftKey ? first : last)) {
+    (e.shiftKey ? last : first).focus();
+    e.preventDefault();
+  }
+}
 
 // "Over to …" lines at the end of each chapter
 document.querySelectorAll('.handover').forEach(el => {
@@ -2645,6 +2658,7 @@ document.addEventListener('keydown', e => {
   if (e.ctrlKey || e.metaKey || e.altKey) return;   // leave browser shortcuts alone (Ctrl+F find, Alt+← back, …)
   if (!$('menu').hidden) {
     if (k === 'Escape' || k === 'm' || k === 'M') { closeMenu(); e.preventDefault(); }
+    else if (k === 'Tab') trapMenuTab(e);
     return;
   }
   if (e.target instanceof Element && e.target.matches('input') && k !== ' ') return;   // sliders keep their arrow keys
